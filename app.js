@@ -256,11 +256,15 @@ function filterProducts() {
     );
     renderProducts(filtered);
 }
-
 function addCategory() {
-    const title = document.getElementById('cat-title').value;
+    const titleInput = document.getElementById('cat-title');
     const fileInput = document.getElementById('cat-img-file');
-    if (!title) return;
+    const title = titleInput ? titleInput.value.trim() : '';
+
+    if (!title) {
+        alert("يرجى إدخال اسم الصنف!");
+        return;
+    }
 
     const saveCat = (imgSrc) => {
         data.push({ title: title, image: imgSrc, products: [] });
@@ -269,7 +273,7 @@ function addCategory() {
         finishModal('addCategoryModal', ['cat-title', 'cat-img-file']);
     };
 
-    if (fileInput.files && fileInput.files[0]) {
+    if (fileInput && fileInput.files && fileInput.files[0]) {
         const reader = new FileReader();
         reader.onload = e => saveCat(e.target.result);
         reader.readAsDataURL(fileInput.files[0]);
@@ -285,7 +289,10 @@ function addProduct() {
     const price = document.getElementById('prod-price').value.trim();
     const fileInput = document.getElementById('prod-img-file');
 
-    if (!name || !price) return;
+    if (!name || !price) {
+        alert("يرجى إدخال اسم القطعة والثمن!");
+        return;
+    }
 
     const saveProd = (imgSrc) => {
         data[activeCategoryIndex].products.push({
@@ -301,7 +308,7 @@ function addProduct() {
         finishModal('addProductModal', ['prod-ref', 'prod-name', 'prod-info', 'prod-price', 'prod-img-file']);
     };
 
-    if (fileInput.files && fileInput.files[0]) {
+    if (fileInput && fileInput.files && fileInput.files[0]) {
         const reader = new FileReader();
         reader.onload = e => saveProd(e.target.result);
         reader.readAsDataURL(fileInput.files[0]);
@@ -309,7 +316,6 @@ function addProduct() {
         saveProd('https://via.placeholder.com/150');
     }
 }
-
 function deleteCategory(e, catIndex) {
     e.stopPropagation();
     if (confirm(`حذف صنف "${data[catIndex].title}"؟`)) {
@@ -343,6 +349,18 @@ function editPrice(pIndex) {
 }
 
 function finishModal(modalId, inputIds) {
-    bootstrap.Modal.getInstance(document.getElementById(modalId)).hide();
-    inputIds.forEach(id => document.getElementById(id).value = '');
+    const modalElement = document.getElementById(modalId);
+    let modalInstance = bootstrap.Modal.getInstance(modalElement);
+    
+    if (!modalInstance) {
+        modalInstance = new bootstrap.Modal(modalElement);
+    }
+    
+    modalInstance.hide();
+
+    // تفريغ المدخلات بعد الإغلاق
+    inputIds.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.value = '';
+    });
 }
