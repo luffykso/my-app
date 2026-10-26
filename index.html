@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewpo#dcdfe8tent="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>قطع غيار السيارات - Auto Parts Pro</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
@@ -22,6 +22,11 @@
             </a>
             
             <div class="d-flex align-items-center gap-2">
+                <!-- Bouton Galerie Photos -->
+                <button id="galerie-nav-btn" class="btn btn-outline-info btn-sm d-none" onclick="showSection('galerie-section')">
+                    <i class="fa-solid fa-images me-1"></i> معرض الصور
+                </button>
+
                 <!-- Bouton Cacher/Afficher Prix -->
                 <button id="toggle-price-btn" class="btn btn-outline-warning btn-sm" onclick="togglePriceVisibility()" title="إخفاء/إظهار الثمن">
                     <i class="fa-solid fa-eye" id="price-icon"></i>
@@ -49,7 +54,7 @@
     <!-- SECTION 1: WELCOME MODE -->
     <section id="welcome-section" class="py-5">
         <div class="container text-center py-4">
-            <h2 class="fw-bold mb-2">bonjour</h2>
+            <h2 class="fw-bold mb-2 text-white">مرحباً بك في متجر قطع الغيار</h2>
             <p class="text-muted mb-5">اختر وضع الدخول للمتابعة</p>
 
             <div class="row justify-content-center g-4">
@@ -59,7 +64,7 @@
                             <i class="fa-solid fa-user-gear fs-1"></i>
                         </div>
                         <h4 class="fw-bold text-danger">تعديلات (Admin)</h4>
-                        <p class="text-muted small">إضافة صنف جديد، إضافة/تعديل/حذف القطع، وتغيير الأثمان والحالة.</p>
+                        <p class="text-muted small">إضافة صنف جديد، إضافة/تعديل/حذف القطع، وإدارة ألبوم الصور.</p>
                         <button class="btn btn-danger w-100 mt-auto fw-bold">دخول كـ أدمن</button>
                     </div>
                 </div>
@@ -70,7 +75,7 @@
                             <i class="fa-solid fa-boxes-packing fs-1"></i>
                         </div>
                         <h4 class="fw-bold text-primary">المعلومات (Client)</h4>
-                        <p class="text-muted small">تصفح الأصناف والقطع، البحث عن القطع، وإنشاء الفواتير.</p>
+                        <p class="text-muted small">تصفح الأصناف والقطع، معرض الصور، وإنشاء الفواتير.</p>
                         <button class="btn btn-primary w-100 mt-auto fw-bold">تصفح القطع</button>
                     </div>
                 </div>
@@ -94,7 +99,7 @@
         <section id="categories-section" class="py-4">
             <div class="container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="fw-bold border-start border-primary border-4 ps-2">أصناف قطع الغيار المتوفرة</h4>
+                    <h4 class="fw-bold border-start border-primary border-4 ps-2 text-white">أصناف قطع الغيار المتوفرة</h4>
                 </div>
                 <div class="row g-4" id="categories-container"></div>
             </div>
@@ -104,26 +109,27 @@
         <section id="products-section" class="py-4 d-none">
             <div class="container">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-                    <button class="btn btn-outline-secondary" onclick="showSection('categories-section')">
+                    <button class="btn btn-outline-secondary text-white" onclick="showSection('categories-section')">
                         <i class="fa-solid fa-arrow-right me-1"></i> الرجوع للأصناف
                     </button>
-                    <h4 class="fw-bold m-0" id="current-category-title">القطع المتوفرة</h4>
+                    <h4 class="fw-bold m-0 text-white" id="current-category-title">القطع المتوفرة</h4>
                     <button id="admin-add-product-btn" class="btn btn-success d-none" data-bs-toggle="modal" data-bs-target="#addProductModal">
                         <i class="fa-solid fa-plus me-1"></i> إضافة قطعة جديدة
                     </button>
                 </div>
 
                 <!-- SEARCH BAR -->
-                <div class="card border-0 shadow-sm mb-4 p-3 bg-white">
+                <div class="card border-0 shadow-sm mb-4 p-3">
                     <div class="row g-2 align-items-center">
                         <div class="col-md-8 col-12">
                             <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                                <span class="input-group-text bg-dark border-end-0 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
                                 <input type="text" id="search-input" class="form-control border-start-0" placeholder="بحث بالمرجع (Référence) أو باسم القطعة..." onkeyup="filterProducts()">
                             </div>
                         </div>
                         <div class="col-md-4 col-12 text-md-end text-muted small">
-                            <span id="product-count">0</span> قطعة متوفرة
+                            <span id="product-count">0</span> قطعة متوفرة <br>
+                            <span class="text-info small"><i class="fa-solid fa-info-circle"></i> اضغط مرتين (Double Click) لتكبير القطعة</span>
                         </div>
                     </div>
                 </div>
@@ -133,9 +139,58 @@
             </div>
         </section>
 
+        <!-- SECTION 4: GALERIE ALBUM -->
+        <section id="galerie-section" class="py-4 d-none">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold border-start border-info border-4 ps-2 text-white">معرض الصور حسب الفئة/الماركة</h4>
+                    <button id="admin-add-album-btn" class="btn btn-info btn-sm fw-bold text-white d-none" data-bs-toggle="modal" data-bs-target="#addAlbumModal">
+                        <i class="fa-solid fa-folder-plus me-1"></i> إضافة ألبوم/ماركة جديد
+                    </button>
+                </div>
+                <div class="row g-4" id="albums-container"></div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: ALBUM PHOTOS INNER PAGE -->
+        <section id="album-details-section" class="py-4 d-none">
+            <div class="container">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                    <button class="btn btn-outline-secondary text-white" onclick="showSection('galerie-section')">
+                        <i class="fa-solid fa-arrow-right me-1"></i> الرجوع لمعرض الألبومات
+                    </button>
+                    <h4 class="fw-bold m-0 text-white" id="current-album-title">ألبوم الصور</h4>
+                    <button id="admin-add-album-photo-btn" class="btn btn-success d-none" data-bs-toggle="modal" data-bs-target="#addAlbumPhotoModal">
+                        <i class="fa-solid fa-plus me-1"></i> إضافة صورة جديدة للألبوم
+                    </button>
+                </div>
+                <div class="row g-3" id="album-photos-container"></div>
+            </div>
+        </section>
+
     </div>
 
-    <!-- MODAL: FACTURE (Bhal l-Image) -->
+    <!-- MODAL: ZOOM PRODUCT -->
+    <div class="modal fade" id="zoomModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content text-center p-3">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="zoom-ref-badge" class="badge bg-danger fs-5 mb-2"></div>
+                    <h4 id="zoom-title" class="fw-bold text-white mb-3"></h4>
+                    <div class="bg-white p-3 rounded-3 mb-3" style="max-height: 450px; display: flex; align-items: center; justify-content: center;">
+                        <img id="zoom-img" src="" alt="" style="max-height: 400px; max-width: 100%; object-fit: contain;">
+                    </div>
+                    <p id="zoom-info" class="text-muted"></p>
+                    <div id="zoom-price" class="fs-2 fw-bold text-info"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: FACTURE -->
     <div class="modal fade" id="factureModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -160,8 +215,8 @@
                     </div>
                     <div class="row justify-content-end">
                         <div class="col-md-5">
-                            <div class="card p-3 bg-light border-0 shadow-sm">
-                                <div class="d-flex justify-content-between fw-bold fs-5 text-dark">
+                            <div class="card p-3 bg-light border-0 shadow-sm text-dark">
+                                <div class="d-flex justify-content-between fw-bold fs-5">
                                     <span>TOTAL :</span>
                                     <span id="facture-total" class="text-danger">0.00 DH</span>
                                 </div>
@@ -183,15 +238,15 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold">إضافة صنف جديد</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">اسم الصنف (مثلاً: Capteurs, Roulements)</label>
+                        <label class="form-label">اسم الصنف</label>
                         <input type="text" id="cat-title" class="form-control">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">صورة الصنف (من الجهاز)</label>
+                        <label class="form-label">صورة الصنف</label>
                         <input type="file" id="cat-img-file" class="form-control" accept="image/*">
                     </div>
                 </div>
@@ -209,16 +264,16 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold">إضافة قطعة جديدة</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-primary">مرجع القطعة (Référence / ID)</label>
-                        <input type="text" id="prod-ref" class="form-control" placeholder="مثال: 79347_F">
+                        <label class="form-label fw-bold text-primary">مرجع القطعة (Référence)</label>
+                        <input type="text" id="prod-ref" class="form-control" placeholder="مثال: ZN101630">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">اسم القطعة والسيارات المطابقة</label>
-                        <input type="text" id="prod-name" class="form-control" placeholder="مثال: CAPTEUR D IMPULSION FIAT BRAVO">
+                        <input type="text" id="prod-name" class="form-control" placeholder="مثال: LANCEUR R9 D-R11">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">معلومات إضافية / تفاصيل</label>
@@ -226,16 +281,68 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">الثمن (DH)</label>
-                        <input type="number" step="0.01" id="prod-price" class="form-control" placeholder="169.98">
+                        <input type="number" step="0.01" id="prod-price" class="form-control" placeholder="93.80">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">صورة القطعة (من الجهاز)</label>
+                        <label class="form-label">صورة القطعة</label>
                         <input type="file" id="prod-img-file" class="form-control" accept="image/*">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                     <button type="button" class="btn btn-success" onclick="addProduct()">إضافة القطعة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD ALBUM -->
+    <div class="modal fade" id="addAlbumModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">إضافة ألبوم/ماركة جديد</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">اسم الألبوم (مثلاً: Samsung, iPhone)</label>
+                        <input type="text" id="album-title" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">صورة الألبوم</label>
+                        <input type="file" id="album-img-file" class="form-control" accept="image/*">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-info text-white" onclick="addAlbum()">حفظ الألبوم</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD ALBUM PHOTO -->
+    <div class="modal fade" id="addAlbumPhotoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">إضافة صورة للألبوم</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">عنوان / اسم الصورة</label>
+                        <input type="text" id="photo-title" class="form-control" placeholder="مثال: Galaxy S23 Ultra">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">اختر الصورة</label>
+                        <input type="file" id="photo-img-file" class="form-control" accept="image/*">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-success" onclick="addAlbumPhoto()">إضافة الصورة</button>
                 </div>
             </div>
         </div>

@@ -1,9 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
 
 body {
     font-family: 'Tajawal', sans-serif;
-    background-color: #e3e4e8;
-    color: #2b2b2b;
+    background: url('bg.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: #ffffff;
+    min-height: 100vh;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 15, 25, 0.82);
+    z-index: -1;
 }
 
 .icon-box {
@@ -15,6 +28,14 @@ body {
     justify-content: center;
 }
 
+/* Glassmorphism Cards */
+.card, .mode-card, .category-card, .product-card {
+    background: rgba(20, 28, 45, 0.85) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(56, 189, 248, 0.2) !important;
+    color: #ffffff !important;
+}
+
 .mode-card {
     border-radius: 18px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -22,7 +43,7 @@ body {
 
 .mode-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.12) !important;
+    box-shadow: 0 15px 30px rgba(14, 165, 233, 0.3) !important;
 }
 
 .cursor-pointer {
@@ -38,6 +59,7 @@ body {
 
 .category-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
 }
 
 .category-card img {
@@ -45,28 +67,25 @@ body {
     object-fit: cover;
 }
 
-/* CATALOG / PRODUCT CARD STYLING (Bhal L-Taswira) */
+/* PRODUCT CARD STYLING */
 .product-card {
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    background: #ffffff;
+    border-radius: 10px;
     overflow: hidden;
     position: relative;
-    transition: box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .product-card:hover {
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.25);
 }
 
 .ref-badge {
-    background-color: #38bdf8;
+    background-color: #0284c7;
     color: #ffffff;
     font-size: 0.75rem;
     font-weight: 700;
     padding: 3px 8px;
-    border-radius: 3px;
-    letter-spacing: 0.5px;
+    border-radius: 4px;
 }
 
 .product-img-box {
@@ -75,7 +94,9 @@ body {
     align-items: center;
     justify-content: center;
     padding: 10px;
-    background-color: #fafafa;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 6px;
+    margin: 8px;
 }
 
 .product-img-box img {
@@ -85,42 +106,73 @@ body {
 }
 
 .product-title {
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     font-weight: 700;
-    color: #334155;
-    line-height: 1.2;
-    height: 2.4em;
+    color: #e2e8f0;
+    line-height: 1.3;
+    height: 2.5em;
     overflow: hidden;
     text-transform: uppercase;
 }
 
 .product-price {
-    color: #ef4444;
+    color: #38bdf8;
     font-size: 1.25rem;
     font-weight: 800;
 }
 
 .out-of-stock-card {
-    opacity: 0.6;
-    filter: grayscale(60%);
+    opacity: 0.5;
+    filter: grayscale(80%);
 }
+
+/* Modal Dark Adjustments */
+.modal-content {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.modal-header, .modal-footer {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.form-control, .form-select {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    border-color: #334155 !important;
+}
+
+.form-control:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25) !important;
+}
+
+.text-muted {
+    color: #94a3b8 !important;
+}
+
+/* Print Styling */
 @media print {
     body * {
         visibility: hidden;
     }
     #facture-print-area, #facture-print-area * {
         visibility: visible;
+        color: #000000 !important;
     }
     #facture-print-area {
         position: absolute;
         left: 0;
         top: 0;
         width: 100%;
+        background: #ffffff !important;
     }
     .no-print {
         display: none !important;
     }
 }
+
 /* Fix stuck modal overlay */
 body:not(.modal-open) .modal-backdrop {
     display: none !important;

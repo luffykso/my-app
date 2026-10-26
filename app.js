@@ -1,36 +1,52 @@
 let currentMode = null;
 let activeCategoryIndex = null;
-let isPriceVisible = true; // Afficher/Masquer prix
-let isFactureMode = false; // Mode Facture ON/OFF
-let factureItems = [];     // Articles slectionns f la facture
+let activeAlbumIndex = null;
+let isPriceVisible = true;
+let isFactureMode = false;
+let factureItems = [];
+let factureModalInstance = null;
 
 const defaultData = [
     {
         title: "الحساسات (Capteurs)",
         image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=500&q=80",
         products: [
-            { ref: "79347_F", name: "CAPTEUR D IMPULSION FIAT BRAVO II - DOBLO", info: "Original FAE", price: 169.98, available: true, image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=300&q=80" },
-            { ref: "79171_F", name: "CAPTEUR D IMPULSION FIAT DOBLO - FIORINO", info: "Original FAE", price: 281.86, available: true, image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=300&q=80" }
+            { ref: "ZN101630", name: "LANCEUR R9 D-R11 D-UNO D", info: "Original FAE", price: 93.80, available: true, image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=300&q=80" },
+            { ref: "79347_F", name: "CAPTEUR D IMPULSION FIAT BRAVO II - DOBLO", info: "Original FAE", price: 169.98, available: true, image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=300&q=80" }
         ]
     }
 ];
 
+const defaultAlbums = [
+    {
+        title: "Samsung",
+        image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=500&q=80",
+        photos: [
+            { title: "Galaxy S23 Ultra", image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=300&q=80" }
+        ]
+    },
+    {
+        title: "iPhone",
+        image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=500&q=80",
+        photos: []
+    }
+];
+
 let data = JSON.parse(localStorage.getItem('auto_parts_data')) || defaultData;
+let albums = JSON.parse(localStorage.getItem('auto_parts_albums')) || defaultAlbums;
 
 function saveData() {
     localStorage.setItem('auto_parts_data', JSON.stringify(data));
+    localStorage.setItem('auto_parts_albums', JSON.stringify(albums));
 }
 
-// Cacher / Afficher Prix Toggle
 function togglePriceVisibility() {
     isPriceVisible = !isPriceVisible;
     const icon = document.getElementById('price-icon');
     icon.className = isPriceVisible ? "fa-solid fa-eye" : "fa-solid fa-eye-slash text-danger";
-    
     if (activeCategoryIndex !== null) renderProducts();
 }
 
-// Switch Mode Facture Toggle
 function toggleFactureMode(enabled) {
     isFactureMode = enabled;
     document.getElementById('view-facture-btn').classList.toggle('d-none', !enabled);
@@ -42,6 +58,7 @@ function enterMode(mode) {
     document.getElementById('welcome-section').classList.add('d-none');
     document.getElementById('app-content').classList.remove('d-none');
     document.getElementById('home-btn').classList.remove('d-none');
+    document.getElementById('galerie-nav-btn').classList.remove('d-none');
     document.getElementById('facture-switch-container').classList.remove('d-none');
 
     const badge = document.getElementById('role-badge');
@@ -50,11 +67,15 @@ function enterMode(mode) {
         badge.innerText = "وضع التعديلات (Admin)";
         document.getElementById('admin-banner').classList.remove('d-none');
         document.getElementById('admin-add-product-btn').classList.remove('d-none');
+        document.getElementById('admin-add-album-btn').classList.remove('d-none');
+        document.getElementById('admin-add-album-photo-btn').classList.remove('d-none');
     } else {
         badge.className = "badge bg-primary fs-6";
         badge.innerText = "وضع المعلومات (Client)";
         document.getElementById('admin-banner').classList.add('d-none');
         document.getElementById('admin-add-product-btn').classList.add('d-none');
+        document.getElementById('admin-add-album-btn').classList.add('d-none');
+        document.getElementById('admin-add-album-photo-btn').classList.add('d-none');
     }
 
     showSection('categories-section');
@@ -65,6 +86,7 @@ function showSection(sectionId) {
         document.getElementById('welcome-section').classList.remove('d-none');
         document.getElementById('app-content').classList.add('d-none');
         document.getElementById('home-btn').classList.add('d-none');
+        document.getElementById('galerie-nav-btn').classList.add('d-none');
         document.getElementById('facture-switch-container').classList.add('d-none');
         document.getElementById('view-facture-btn').classList.add('d-none');
         document.getElementById('role-badge').className = "badge bg-secondary";
@@ -72,10 +94,17 @@ function showSection(sectionId) {
         return;
     }
 
+    document.getElementById('categories-section').classList.add('d-none');
+    document.getElementById('products-section').classList.add('d-none');
+    document.getElementById('galerie-section').classList.add('d-none');
+    document.getElementById('album-details-section').classList.add('d-none');
+
     if (sectionId === 'categories-section') {
         document.getElementById('categories-section').classList.remove('d-none');
-        document.getElementById('products-section').classList.add('d-none');
         renderCategories();
+    } else if (sectionId === 'galerie-section') {
+        document.getElementById('galerie-section').classList.remove('d-none');
+        renderAlbums();
     }
 }
 
@@ -99,7 +128,7 @@ function renderCategories() {
                     ${deleteBtn}
                     <img src="${cat.image}" class="card-img-top" alt="${cat.title}">
                     <div class="card-body text-center">
-                        <h5 class="card-title fw-bold text-dark m-0">${cat.title}</h5>
+                        <h5 class="card-title fw-bold text-white m-0">${cat.title}</h5>
                         <small class="text-muted">${cat.products.length} قطعة</small>
                     </div>
                 </div>
@@ -135,7 +164,7 @@ function renderProducts(filteredList = null) {
         let adminControls = '';
         if (currentMode === 'admin') {
             adminControls = `
-                <div class="border-top p-2 bg-light d-flex justify-content-between align-items-center">
+                <div class="border-top p-2 bg-dark d-flex justify-content-between align-items-center">
                     <button class="btn btn-warning btn-sm" onclick="editPrice(${realIndex})"><i class="fa-solid fa-pen"></i></button>
                     <button class="btn ${p.available ? 'btn-secondary' : 'btn-success'} btn-sm" onclick="toggleStock(${realIndex})">
                         ${p.available ? 'نفذت' : 'متوفرة'}
@@ -150,17 +179,15 @@ function renderProducts(filteredList = null) {
             factureControl = `
                 <div class="border-top p-2 bg-warning bg-opacity-10 d-flex align-items-center gap-1">
                     <input type="number" id="qty-${realIndex}" class="form-control form-control-sm text-center" value="1" min="1" style="width: 50px;">
-                    <button class="btn btn-sm btn-success w-100 fw-bold" onclick="addToFacture(${realIndex})">
-                        + للفاتورة
-                    </button>
+                    <button class="btn btn-sm btn-success w-100 fw-bold" onclick="addToFacture(${realIndex})">+ للفاتورة</button>
                 </div>
             `;
         }
 
         gridContainer.innerHTML += `
             <div class="col-6 col-md-4 col-lg-3">
-                <div class="product-card h-100 d-flex flex-column ${!p.available ? 'out-of-stock-card' : ''}">
-                    <div class="d-flex justify-content-between align-items-center p-2 border-bottom bg-light">
+                <div class="product-card h-100 d-flex flex-column ${!p.available ? 'out-of-stock-card' : ''}" ondblclick="zoomProduct(${realIndex})">
+                    <div class="d-flex justify-content-between align-items-center p-2 border-bottom bg-dark">
                         <span class="ref-badge">${p.ref || 'N/A'}</span>
                         ${!p.available ? '<span class="badge bg-danger">مبيوع</span>' : ''}
                     </div>
@@ -179,7 +206,141 @@ function renderProducts(filteredList = null) {
     });
 }
 
-// --- FACTURE FUNCTIONS ---
+function zoomProduct(realIndex) {
+    const prod = data[activeCategoryIndex].products[realIndex];
+    document.getElementById('zoom-ref-badge').innerText = prod.ref || 'N/A';
+    document.getElementById('zoom-title').innerText = prod.name;
+    document.getElementById('zoom-img').src = prod.image || 'https://via.placeholder.com/150';
+    document.getElementById('zoom-info').innerText = prod.info || '';
+    document.getElementById('zoom-price').innerText = isPriceVisible ? `${parseFloat(prod.price).toFixed(2)} DH` : `*** DH`;
+    
+    new bootstrap.Modal(document.getElementById('zoomModal')).show();
+}
+
+/* GALERIE ALBUMS */
+function renderAlbums() {
+    const container = document.getElementById('albums-container');
+    container.innerHTML = '';
+
+    albums.forEach((album, index) => {
+        let deleteBtn = '';
+        if (currentMode === 'admin') {
+            deleteBtn = `<button class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 z-3" onclick="deleteAlbum(event, ${index})"><i class="fa-solid fa-trash"></i></button>`;
+        }
+
+        container.innerHTML += `
+            <div class="col-md-4 col-sm-6">
+                <div class="card category-card border-0 shadow-sm h-100 position-relative" onclick="openAlbum(${index})">
+                    ${deleteBtn}
+                    <img src="${album.image}" class="card-img-top" alt="${album.title}">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold text-info m-0">${album.title}</h5>
+                        <small class="text-muted">${album.photos.length} صورة</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function openAlbum(index) {
+    activeAlbumIndex = index;
+    document.getElementById('current-album-title').innerText = albums[index].title;
+    document.getElementById('galerie-section').classList.add('d-none');
+    document.getElementById('album-details-section').classList.remove('d-none');
+    renderAlbumPhotos();
+}
+
+function renderAlbumPhotos() {
+    const container = document.getElementById('album-photos-container');
+    container.innerHTML = '';
+    const photos = albums[activeAlbumIndex].photos;
+
+    if (photos.length === 0) {
+        container.innerHTML = `<div class="col-12 text-center py-5 text-muted">لا توجد صور في هذا الألبوم.</div>`;
+        return;
+    }
+
+    photos.forEach((photo, pIndex) => {
+        let deleteBtn = '';
+        if (currentMode === 'admin') {
+            deleteBtn = `<button class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 z-3" onclick="deleteAlbumPhoto(${pIndex})"><i class="fa-solid fa-trash"></i></button>`;
+        }
+
+        container.innerHTML += `
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card product-card h-100 position-relative">
+                    ${deleteBtn}
+                    <div class="product-img-box" style="height: 200px;">
+                        <img src="${photo.image}" alt="${photo.title}">
+                    </div>
+                    <div class="p-2 text-center">
+                        <div class="fw-bold text-white small">${photo.title}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function addAlbum() {
+    const title = document.getElementById('album-title').value.trim();
+    const fileInput = document.getElementById('album-img-file');
+    if (!title) return;
+
+    const save = (imgSrc) => {
+        albums.push({ title: title, image: imgSrc, photos: [] });
+        saveData();
+        renderAlbums();
+        finishModal('addAlbumModal', ['album-title', 'album-img-file']);
+    };
+
+    if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => save(e.target.result);
+        reader.readAsDataURL(fileInput.files[0]);
+    } else {
+        save('https://via.placeholder.com/300');
+    }
+}
+
+function addAlbumPhoto() {
+    const title = document.getElementById('photo-title').value.trim();
+    const fileInput = document.getElementById('photo-img-file');
+
+    if (!fileInput.files || !fileInput.files[0]) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        albums[activeAlbumIndex].photos.push({
+            title: title || 'صورة',
+            image: e.target.result
+        });
+        saveData();
+        renderAlbumPhotos();
+        finishModal('addAlbumPhotoModal', ['photo-title', 'photo-img-file']);
+    };
+    reader.readAsDataURL(fileInput.files[0]);
+}
+
+function deleteAlbum(e, index) {
+    e.stopPropagation();
+    if (confirm(`حذف الألبوم بالكامل؟`)) {
+        albums.splice(index, 1);
+        saveData();
+        renderAlbums();
+    }
+}
+
+function deleteAlbumPhoto(index) {
+    if (confirm(`حذف الصورة؟`)) {
+        albums[activeAlbumIndex].photos.splice(index, 1);
+        saveData();
+        renderAlbumPhotos();
+    }
+}
+
+/* FACTURE FUNCTIONS */
 function addToFacture(realIndex) {
     const prod = data[activeCategoryIndex].products[realIndex];
     const qtyInput = document.getElementById(`qty-${realIndex}`);
@@ -200,7 +361,6 @@ function addToFacture(realIndex) {
     document.getElementById('facture-count').innerText = factureItems.length;
     alert(`تمت إضافة ${qty} من ${prod.name} إلى الفاتورة`);
 }
-let factureModalInstance = null;
 
 function openFactureModal() {
     const tbody = document.getElementById('facture-table-body');
@@ -231,7 +391,6 @@ function openFactureModal() {
 
     document.getElementById('facture-total').innerText = `${grandTotal.toFixed(2)} DH`;
 
-    // Re-use or initialize modal instance to prevent overlay bugs
     const modalElement = document.getElementById('factureModal');
     if (!factureModalInstance) {
         factureModalInstance = new bootstrap.Modal(modalElement);
@@ -242,22 +401,18 @@ function openFactureModal() {
 function removeFromFacture(index) {
     factureItems.splice(index, 1);
     document.getElementById('facture-count').innerText = factureItems.length;
-    
-    // Update table content directly without re-opening modal
     openFactureModal();
 }
 
 function clearFacture() {
     factureItems = [];
     document.getElementById('facture-count').innerText = 0;
-    
-    // Hide modal cleanly if empty
     if (factureModalInstance) {
         factureModalInstance.hide();
     }
 }
 
-// Core Handlers
+/* CORE HANDLERS */
 function filterProducts() {
     const query = document.getElementById('search-input').value.toLowerCase().trim();
     const allProducts = data[activeCategoryIndex].products;
@@ -269,6 +424,7 @@ function filterProducts() {
     );
     renderProducts(filtered);
 }
+
 function addCategory() {
     const titleInput = document.getElementById('cat-title');
     const fileInput = document.getElementById('cat-img-file');
@@ -329,6 +485,7 @@ function addProduct() {
         saveProd('https://via.placeholder.com/150');
     }
 }
+
 function deleteCategory(e, catIndex) {
     e.stopPropagation();
     if (confirm(`حذف صنف "${data[catIndex].title}"؟`)) {
@@ -364,14 +521,11 @@ function editPrice(pIndex) {
 function finishModal(modalId, inputIds) {
     const modalElement = document.getElementById(modalId);
     let modalInstance = bootstrap.Modal.getInstance(modalElement);
-    
     if (!modalInstance) {
         modalInstance = new bootstrap.Modal(modalElement);
     }
-    
     modalInstance.hide();
 
-    // تفريغ المدخلات بعد الإغلاق
     inputIds.forEach(id => {
         const input = document.getElementById(id);
         if (input) input.value = '';
