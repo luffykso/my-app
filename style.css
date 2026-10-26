@@ -15,7 +15,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(10, 15, 25, 0.82);
+    background: rgba(10, 15, 25, 0.84);
     z-index: -1;
 }
 
@@ -29,8 +29,8 @@ body::before {
 }
 
 /* Glassmorphism Cards */
-.card, .mode-card, .category-card, .product-card {
-    background: rgba(20, 28, 45, 0.85) !important;
+.card, .mode-card, .category-card, .product-card, .invoice-card-full {
+    background: rgba(20, 28, 45, 0.88) !important;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(56, 189, 248, 0.2) !important;
     color: #ffffff !important;
@@ -117,13 +117,32 @@ body::before {
 
 .product-price {
     color: #38bdf8;
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 800;
 }
 
-.out-of-stock-card {
-    opacity: 0.5;
-    filter: grayscale(80%);
+/* VERTICAL FULL INVOICE STYLING (الفواتير المصورة الكبيرة) */
+.invoice-card-full {
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+.invoice-img-large-box {
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.invoice-img-large-box img {
+    width: 100%;
+    max-width: 1000px;
+    height: auto;
+    object-fit: contain;
+    border-radius: 4px;
 }
 
 /* Modal Dark Adjustments */

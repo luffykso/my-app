@@ -1,6 +1,6 @@
 let currentMode = null;
 let activeCategoryIndex = null;
-let activeAlbumIndex = null;
+let activeCompanyIndex = null;
 let isPriceVisible = true;
 let isFactureMode = false;
 let factureItems = [];
@@ -17,27 +17,22 @@ const defaultData = [
     }
 ];
 
-const defaultAlbums = [
+const defaultCompanies = [
     {
         title: "Samsung",
         image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=500&q=80",
-        photos: [
-            { title: "Galaxy S23 Ultra", image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=300&q=80" }
+        invoices: [
+            { id: "FAC-001", title: "فاتورة سلع شهر أكتوبر", image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1000&q=80" }
         ]
-    },
-    {
-        title: "iPhone",
-        image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=500&q=80",
-        photos: []
     }
 ];
 
 let data = JSON.parse(localStorage.getItem('auto_parts_data')) || defaultData;
-let albums = JSON.parse(localStorage.getItem('auto_parts_albums')) || defaultAlbums;
+let companies = JSON.parse(localStorage.getItem('auto_parts_companies')) || defaultCompanies;
 
 function saveData() {
     localStorage.setItem('auto_parts_data', JSON.stringify(data));
-    localStorage.setItem('auto_parts_albums', JSON.stringify(albums));
+    localStorage.setItem('auto_parts_companies', JSON.stringify(companies));
 }
 
 function togglePriceVisibility() {
@@ -58,7 +53,7 @@ function enterMode(mode) {
     document.getElementById('welcome-section').classList.add('d-none');
     document.getElementById('app-content').classList.remove('d-none');
     document.getElementById('home-btn').classList.remove('d-none');
-    document.getElementById('galerie-nav-btn').classList.remove('d-none');
+    document.getElementById('factures-nav-btn').classList.remove('d-none');
     document.getElementById('facture-switch-container').classList.remove('d-none');
 
     const badge = document.getElementById('role-badge');
@@ -67,15 +62,15 @@ function enterMode(mode) {
         badge.innerText = "وضع التعديلات (Admin)";
         document.getElementById('admin-banner').classList.remove('d-none');
         document.getElementById('admin-add-product-btn').classList.remove('d-none');
-        document.getElementById('admin-add-album-btn').classList.remove('d-none');
-        document.getElementById('admin-add-album-photo-btn').classList.remove('d-none');
+        document.getElementById('admin-add-company-btn').classList.remove('d-none');
+        document.getElementById('admin-add-invoice-btn').classList.remove('d-none');
     } else {
         badge.className = "badge bg-primary fs-6";
         badge.innerText = "وضع المعلومات (Client)";
         document.getElementById('admin-banner').classList.add('d-none');
         document.getElementById('admin-add-product-btn').classList.add('d-none');
-        document.getElementById('admin-add-album-btn').classList.add('d-none');
-        document.getElementById('admin-add-album-photo-btn').classList.add('d-none');
+        document.getElementById('admin-add-company-btn').classList.add('d-none');
+        document.getElementById('admin-add-invoice-btn').classList.add('d-none');
     }
 
     showSection('categories-section');
@@ -86,7 +81,7 @@ function showSection(sectionId) {
         document.getElementById('welcome-section').classList.remove('d-none');
         document.getElementById('app-content').classList.add('d-none');
         document.getElementById('home-btn').classList.add('d-none');
-        document.getElementById('galerie-nav-btn').classList.add('d-none');
+        document.getElementById('factures-nav-btn').classList.add('d-none');
         document.getElementById('facture-switch-container').classList.add('d-none');
         document.getElementById('view-facture-btn').classList.add('d-none');
         document.getElementById('role-badge').className = "badge bg-secondary";
@@ -96,15 +91,15 @@ function showSection(sectionId) {
 
     document.getElementById('categories-section').classList.add('d-none');
     document.getElementById('products-section').classList.add('d-none');
-    document.getElementById('galerie-section').classList.add('d-none');
-    document.getElementById('album-details-section').classList.add('d-none');
+    document.getElementById('companies-section').classList.add('d-none');
+    document.getElementById('company-invoices-section').classList.add('d-none');
 
     if (sectionId === 'categories-section') {
         document.getElementById('categories-section').classList.remove('d-none');
         renderCategories();
-    } else if (sectionId === 'galerie-section') {
-        document.getElementById('galerie-section').classList.remove('d-none');
-        renderAlbums();
+    } else if (sectionId === 'companies-section') {
+        document.getElementById('companies-section').classList.remove('d-none');
+        renderCompanies();
     }
 }
 
@@ -206,6 +201,7 @@ function renderProducts(filteredList = null) {
     });
 }
 
+// EXTRA LARGE ZOOM
 function zoomProduct(realIndex) {
     const prod = data[activeCategoryIndex].products[realIndex];
     document.getElementById('zoom-ref-badge').innerText = prod.ref || 'N/A';
@@ -217,25 +213,25 @@ function zoomProduct(realIndex) {
     new bootstrap.Modal(document.getElementById('zoomModal')).show();
 }
 
-/* GALERIE ALBUMS */
-function renderAlbums() {
-    const container = document.getElementById('albums-container');
+/* COMPANIES & INVOICES MANAGEMENT */
+function renderCompanies() {
+    const container = document.getElementById('companies-container');
     container.innerHTML = '';
 
-    albums.forEach((album, index) => {
+    companies.forEach((comp, index) => {
         let deleteBtn = '';
         if (currentMode === 'admin') {
-            deleteBtn = `<button class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 z-3" onclick="deleteAlbum(event, ${index})"><i class="fa-solid fa-trash"></i></button>`;
+            deleteBtn = `<button class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 z-3" onclick="deleteCompany(event, ${index})"><i class="fa-solid fa-trash"></i></button>`;
         }
 
         container.innerHTML += `
             <div class="col-md-4 col-sm-6">
-                <div class="card category-card border-0 shadow-sm h-100 position-relative" onclick="openAlbum(${index})">
+                <div class="card category-card border-0 shadow-sm h-100 position-relative" onclick="openCompany(${index})">
                     ${deleteBtn}
-                    <img src="${album.image}" class="card-img-top" alt="${album.title}">
+                    <img src="${comp.image}" class="card-img-top" alt="${comp.title}">
                     <div class="card-body text-center">
-                        <h5 class="card-title fw-bold text-info m-0">${album.title}</h5>
-                        <small class="text-muted">${album.photos.length} صورة</small>
+                        <h5 class="card-title fw-bold text-info m-0">${comp.title}</h5>
+                        <small class="text-muted">${comp.invoices.length} فاتورة مصورة</small>
                     </div>
                 </div>
             </div>
@@ -243,56 +239,76 @@ function renderAlbums() {
     });
 }
 
-function openAlbum(index) {
-    activeAlbumIndex = index;
-    document.getElementById('current-album-title').innerText = albums[index].title;
-    document.getElementById('galerie-section').classList.add('d-none');
-    document.getElementById('album-details-section').classList.remove('d-none');
-    renderAlbumPhotos();
+function openCompany(index) {
+    activeCompanyIndex = index;
+    document.getElementById('current-company-title').innerText = `فواتير شركة: ${companies[index].title}`;
+    document.getElementById('companies-section').classList.add('d-none');
+    document.getElementById('company-invoices-section').classList.remove('d-none');
+    document.getElementById('invoice-search-input').value = '';
+    renderInvoices();
 }
 
-function renderAlbumPhotos() {
-    const container = document.getElementById('album-photos-container');
+function renderInvoices(filteredList = null) {
+    const container = document.getElementById('invoices-vertical-container');
     container.innerHTML = '';
-    const photos = albums[activeAlbumIndex].photos;
+    const invList = filteredList || companies[activeCompanyIndex].invoices;
 
-    if (photos.length === 0) {
-        container.innerHTML = `<div class="col-12 text-center py-5 text-muted">لا توجد صور في هذا الألبوم.</div>`;
+    document.getElementById('invoice-count').innerText = invList.length;
+
+    if (invList.length === 0) {
+        container.innerHTML = `<div class="text-center py-5 text-muted fs-5">لا توجد فواتير مصورة لهذه الشركة حالياً.</div>`;
         return;
     }
 
-    photos.forEach((photo, pIndex) => {
+    invList.forEach((inv, index) => {
+        const realIndex = companies[activeCompanyIndex].invoices.indexOf(inv);
         let deleteBtn = '';
         if (currentMode === 'admin') {
-            deleteBtn = `<button class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 z-3" onclick="deleteAlbumPhoto(${pIndex})"><i class="fa-solid fa-trash"></i></button>`;
+            deleteBtn = `<button class="btn btn-danger btn-sm" onclick="deleteInvoice(${realIndex})"><i class="fa-solid fa-trash me-1"></i> حذف الفاتورة</button>`;
         }
 
         container.innerHTML += `
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="card product-card h-100 position-relative">
+            <div class="invoice-card-full p-3 id="invoice-card-${realIndex}">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
+                    <div>
+                        <span class="badge bg-info text-dark fs-6 me-2">${inv.id || 'N/A'}</span>
+                        <span class="fw-bold fs-4 text-white">${inv.title}</span>
+                    </div>
                     ${deleteBtn}
-                    <div class="product-img-box" style="height: 200px;">
-                        <img src="${photo.image}" alt="${photo.title}">
-                    </div>
-                    <div class="p-2 text-center">
-                        <div class="fw-bold text-white small">${photo.title}</div>
-                    </div>
+                </div>
+                <!-- الصورة كبيرة بالكامل وواضحة -->
+                <div class="invoice-img-large-box">
+                    <img src="${inv.image}" alt="${inv.title}" loading="lazy">
                 </div>
             </div>
         `;
     });
 }
 
-function addAlbum() {
-    const title = document.getElementById('album-title').value.trim();
-    const fileInput = document.getElementById('album-img-file');
+function filterInvoices() {
+    const query = document.getElementById('invoice-search-input').value.toLowerCase().trim();
+    const allInvoices = companies[activeCompanyIndex].invoices;
+
+    if (!query) return renderInvoices(allInvoices);
+
+    const filtered = allInvoices.filter(inv => 
+        (inv.id && inv.id.toLowerCase().includes(query)) || 
+        (inv.title && inv.title.toLowerCase().includes(query))
+    );
+
+    renderInvoices(filtered);
+}
+
+function addCompany() {
+    const title = document.getElementById('company-title').value.trim();
+    const fileInput = document.getElementById('company-img-file');
     if (!title) return;
 
     const save = (imgSrc) => {
-        albums.push({ title: title, image: imgSrc, photos: [] });
+        companies.push({ title: title, image: imgSrc, invoices: [] });
         saveData();
-        renderAlbums();
-        finishModal('addAlbumModal', ['album-title', 'album-img-file']);
+        renderCompanies();
+        finishModal('addCompanyModal', ['company-title', 'company-img-file']);
     };
 
     if (fileInput.files && fileInput.files[0]) {
@@ -304,43 +320,48 @@ function addAlbum() {
     }
 }
 
-function addAlbumPhoto() {
-    const title = document.getElementById('photo-title').value.trim();
-    const fileInput = document.getElementById('photo-img-file');
+function addInvoice() {
+    const ref = document.getElementById('invoice-ref').value.trim();
+    const title = document.getElementById('invoice-title').value.trim();
+    const fileInput = document.getElementById('invoice-img-file');
 
-    if (!fileInput.files || !fileInput.files[0]) return;
+    if (!fileInput.files || !fileInput.files[0]) {
+        alert("يرجى اختيار صورة الفاتورة من الهاتف/الجهاز!");
+        return;
+    }
 
     const reader = new FileReader();
     reader.onload = function (e) {
-        albums[activeAlbumIndex].photos.push({
-            title: title || 'صورة',
+        companies[activeCompanyIndex].invoices.push({
+            id: ref || `FAC-${Date.now().toString().slice(-4)}`,
+            title: title || 'فاتورة بدون عنوان',
             image: e.target.result
         });
         saveData();
-        renderAlbumPhotos();
-        finishModal('addAlbumPhotoModal', ['photo-title', 'photo-img-file']);
+        renderInvoices();
+        finishModal('addInvoiceModal', ['invoice-ref', 'invoice-title', 'invoice-img-file']);
     };
     reader.readAsDataURL(fileInput.files[0]);
 }
 
-function deleteAlbum(e, index) {
+function deleteCompany(e, index) {
     e.stopPropagation();
-    if (confirm(`حذف الألبوم بالكامل؟`)) {
-        albums.splice(index, 1);
+    if (confirm(`حذف ملف الشركة وفواتيرها بالكامل؟`)) {
+        companies.splice(index, 1);
         saveData();
-        renderAlbums();
+        renderCompanies();
     }
 }
 
-function deleteAlbumPhoto(index) {
-    if (confirm(`حذف الصورة؟`)) {
-        albums[activeAlbumIndex].photos.splice(index, 1);
+function deleteInvoice(index) {
+    if (confirm(`حذف هذه الفاتورة المصورة؟`)) {
+        companies[activeCompanyIndex].invoices.splice(index, 1);
         saveData();
-        renderAlbumPhotos();
+        renderInvoices();
     }
 }
 
-/* FACTURE FUNCTIONS */
+/* FACTURE GENERATOR FUNCTIONS */
 function addToFacture(realIndex) {
     const prod = data[activeCategoryIndex].products[realIndex];
     const qtyInput = document.getElementById(`qty-${realIndex}`);
