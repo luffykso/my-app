@@ -121,3 +121,11 @@ body {
         display: none !important;
     }
 }
+/* Fix stuck modal overlay */
+body:not(.modal-open) .modal-backdrop {
+    display: none !important;
+}
+body:not(.modal-open) {
+    overflow: auto !important;
+    padding-right: 0 !important;
+}

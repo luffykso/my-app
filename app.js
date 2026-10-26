@@ -200,6 +200,7 @@ function addToFacture(realIndex) {
     document.getElementById('facture-count').innerText = factureItems.length;
     alert(`تمت إضافة ${qty} من ${prod.name} إلى الفاتورة`);
 }
+let factureModalInstance = null;
 
 function openFactureModal() {
     const tbody = document.getElementById('facture-table-body');
@@ -229,19 +230,31 @@ function openFactureModal() {
     });
 
     document.getElementById('facture-total').innerText = `${grandTotal.toFixed(2)} DH`;
-    new bootstrap.Modal(document.getElementById('factureModal')).show();
+
+    // Re-use or initialize modal instance to prevent overlay bugs
+    const modalElement = document.getElementById('factureModal');
+    if (!factureModalInstance) {
+        factureModalInstance = new bootstrap.Modal(modalElement);
+    }
+    factureModalInstance.show();
 }
 
 function removeFromFacture(index) {
     factureItems.splice(index, 1);
     document.getElementById('facture-count').innerText = factureItems.length;
+    
+    // Update table content directly without re-opening modal
     openFactureModal();
 }
 
 function clearFacture() {
     factureItems = [];
     document.getElementById('facture-count').innerText = 0;
-    openFactureModal();
+    
+    // Hide modal cleanly if empty
+    if (factureModalInstance) {
+        factureModalInstance.hide();
+    }
 }
 
 // Core Handlers
