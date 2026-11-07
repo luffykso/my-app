@@ -3,6 +3,8 @@ let activeCategoryIndex = null;
 let activeSubCategoryIndex = null;
 let activeCompanyIndex = null;
 let isPriceVisible = true;
+let isFactureModeActive = false; 
+let factureItems = JSON.parse(localStorage.getItem('auto_parts_facture')) || [];
 
 const defaultData = [
     {
@@ -42,11 +44,39 @@ let companies = JSON.parse(localStorage.getItem('auto_parts_companies')) || defa
 function saveData() {
     localStorage.setItem('auto_parts_data', JSON.stringify(data));
     localStorage.setItem('auto_parts_companies', JSON.stringify(companies));
+    localStorage.setItem('auto_parts_facture', JSON.stringify(factureItems));
+}
+
+function toggleFactureMode() {
+    isFactureModeActive = !isFactureModeActive;
+    const btn = document.getElementById('facture-mode-toggle-btn');
+    const viewBtn = document.getElementById('view-facture-btn');
+
+    if (btn) {
+        if (isFactureModeActive) {
+            btn.className = "btn btn-success btn-sm rounded-pill px-3 fw-bold shadow-sm";
+            btn.innerHTML = `<i class="fa-solid fa-circle-check me-1"></i> وضع الفاتورة: مفعّل`;
+        } else {
+            btn.className = "btn btn-danger btn-sm rounded-pill px-3 fw-bold shadow-sm";
+            btn.innerHTML = `<i class="fa-solid fa-circle-xmark me-1"></i> وضع الفاتورة: معطّل`;
+        }
+    }
+
+    if (viewBtn) {
+        if (isFactureModeActive) {
+            viewBtn.classList.remove('d-none');
+        } else {
+            viewBtn.classList.add('d-none');
+        }
+    }
+
+    updateFactureBadge();
+    if (activeCategoryIndex !== null) renderSubCategories();
 }
 
 function togglePriceVisibility() {
     isPriceVisible = !isPriceVisible;
-    document.getElementById('price-icon').className = isPriceVisible ? "fa-solid fa-eye" : "fa-solid fa-eye-slash text-danger";
+    document.getElementById('price-icon').className = isPriceVisible ? "fa-solid fa-eye text-warning" : "fa-solid fa-eye-slash text-danger";
     if (activeCategoryIndex !== null) renderSubCategories();
 }
 
@@ -56,24 +86,28 @@ function enterMode(mode) {
     document.getElementById('app-content').classList.remove('d-none');
     document.getElementById('home-btn').classList.remove('d-none');
     document.getElementById('factures-nav-btn').classList.remove('d-none');
+    
+    const toggleContainer = document.getElementById('facture-toggle-container');
+    if (toggleContainer) toggleContainer.classList.remove('d-none');
 
     const badge = document.getElementById('role-badge');
     if (currentMode === 'admin') {
-        badge.className = "badge bg-danger fs-6";
-        badge.innerText = "وضع التعديلات (Admin)";
+        badge.className = "badge bg-danger fs-6 role-pill";
+        badge.innerText = "تعديلات (Admin)";
         document.getElementById('admin-banner').classList.remove('d-none');
         document.getElementById('admin-add-subcat-btn').classList.remove('d-none');
         document.getElementById('admin-add-company-btn').classList.remove('d-none');
         document.getElementById('admin-add-invoice-btn').classList.remove('d-none');
     } else {
-        badge.className = "badge bg-primary fs-6";
-        badge.innerText = "وضع المعلومات (Client)";
+        badge.className = "badge bg-primary fs-6 role-pill";
+        badge.innerText = "معلومات (Client)";
         document.getElementById('admin-banner').classList.add('d-none');
         document.getElementById('admin-add-subcat-btn').classList.add('d-none');
         document.getElementById('admin-add-company-btn').classList.add('d-none');
         document.getElementById('admin-add-invoice-btn').classList.add('d-none');
     }
 
+    updateFactureBadge();
     showSection('categories-section');
 }
 
@@ -132,6 +166,15 @@ function openCategory(index) {
     document.getElementById('products-section').classList.remove('d-none');
     renderSubCategories();
 }
+
+function sortByIdDescending(list) {
+    return list.sort((a, b) => {
+        const idA = String(a.ref || a.id || '');
+        const idB = String(b.ref || b.id || '');
+        return idB.localeCompare(idA, undefined, { numeric: true, sensitivity: 'base' });
+    });
+}
+
 function renderSubCategories(filteredQuery = null) {
     const container = document.getElementById('subcategories-container');
     container.innerHTML = '';
@@ -145,7 +188,6 @@ function renderSubCategories(filteredQuery = null) {
     subCats.forEach((subCat, sIndex) => {
         let products = subCat.products || [];
 
-        // 1. فلترة البحث إذا كانت كاينا
         if (filteredQuery) {
             products = products.filter(p => 
                 (p.ref && p.ref.toLowerCase().includes(filteredQuery)) || 
@@ -153,7 +195,6 @@ function renderSubCategories(filteredQuery = null) {
             );
         }
 
-        // 2. ترتيب القطع من الكبير للصغير على حسب الـ Référence (ID)
         products = sortByIdDescending([...products]);
 
         let deleteSubBtn = '';
@@ -163,7 +204,6 @@ function renderSubCategories(filteredQuery = null) {
 
         let productsCardsHtml = '';
         products.forEach((p) => {
-            // نجيبو الأنديكس الحقيقي للقطعة فـ الأراي الأصلية باش الحذف يخدم صح
             const realPIndex = subCat.products.indexOf(p);
             
             const priceVal = p.price !== "" && p.price !== null && p.price !== undefined ? parseFloat(p.price).toFixed(2) : "--";
@@ -171,6 +211,18 @@ function renderSubCategories(filteredQuery = null) {
             let deleteProdBtn = '';
             if (currentMode === 'admin') {
                 deleteProdBtn = `<button class="btn btn-danger btn-sm me-1" onclick="deleteProduct(${sIndex}, ${realPIndex})"><i class="fa-solid fa-trash"></i></button>`;
+            }
+
+            let factureOptionHtml = '';
+            if (isFactureModeActive) {
+                factureOptionHtml = `
+                    <div class="d-flex align-items-center gap-1 mt-2 pt-2 border-top border-secondary">
+                        <input type="number" id="qty-${sIndex}-${realPIndex}" class="form-control form-control-sm text-center bg-dark text-white border-secondary" value="1" min="1" style="width: 55px;">
+                        <button class="btn btn-success btn-sm w-100 fw-bold" onclick="addToFacture(${sIndex}, ${realPIndex})">
+                            <i class="fa-solid fa-plus me-1"></i> للفاتورة
+                        </button>
+                    </div>
+                `;
             }
 
             productsCardsHtml += `
@@ -186,6 +238,7 @@ function renderSubCategories(filteredQuery = null) {
                         <div class="product-details-bottom text-center">
                             <div class="product-title-sm mb-1" title="${p.name || ''}">${p.name || 'بدون اسم'}</div>
                             <div class="product-price-sm">${displayPrice}</div>
+                            ${factureOptionHtml}
                         </div>
                     </div>
                 </div>
@@ -218,6 +271,104 @@ function renderSubCategories(filteredQuery = null) {
         `;
     });
 }
+
+function addToFacture(sIndex, pIndex) {
+    const prod = data[activeCategoryIndex].subCategories[sIndex].products[pIndex];
+    const qtyInput = document.getElementById(`qty-${sIndex}-${pIndex}`);
+    const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+
+    const existingIndex = factureItems.findIndex(item => item.ref === prod.ref && item.name === prod.name);
+    if (existingIndex > -1) {
+        factureItems[existingIndex].qty += qty;
+    } else {
+        factureItems.push({
+            ref: prod.ref || 'N/A',
+            name: prod.name || 'قطعة',
+            price: parseFloat(prod.price) || 0,
+            qty: qty
+        });
+    }
+
+    saveData();
+    updateFactureBadge();
+
+    const btn = event.currentTarget;
+    const oldText = btn.innerHTML;
+    btn.innerHTML = `<i class="fa-solid fa-check"></i> تم!`;
+    btn.classList.replace('btn-success', 'btn-light');
+    setTimeout(() => {
+        btn.innerHTML = oldText;
+        btn.classList.replace('btn-light', 'btn-success');
+    }, 1000);
+}
+
+function updateFactureBadge() {
+    const totalCount = factureItems.reduce((acc, item) => acc + item.qty, 0);
+    const countEl = document.getElementById('facture-count');
+    if (countEl) countEl.innerText = totalCount;
+}
+
+function openFactureModal() {
+    const tbody = document.getElementById('facture-table-body');
+    const totalEl = document.getElementById('facture-total');
+    tbody.innerHTML = '';
+    let grandTotal = 0;
+
+    if (factureItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">الفاتورة فارغة حالياً.</td></tr>`;
+        totalEl.innerText = '0.00 DH';
+    } else {
+        factureItems.forEach((item, index) => {
+            const itemTotal = item.price * item.qty;
+            grandTotal += itemTotal;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong class="text-info">${item.ref}</strong> - ${item.name}</td>
+                    <td>${item.price.toFixed(2)} DH</td>
+                    <td>
+                        <input type="number" min="1" class="form-control form-control-sm text-center mx-auto bg-dark text-white no-print" style="width: 70px;" value="${item.qty}" onchange="updateFactureItemQty(${index}, this.value)">
+                        <span class="d-none d-print-inline">${item.qty}</span>
+                    </td>
+                    <td class="fw-bold text-success">${itemTotal.toFixed(2)} DH</td>
+                    <td class="no-print">
+                        <button class="btn btn-danger btn-sm" onclick="removeFromFacture(${index})"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+        totalEl.innerText = `${grandTotal.toFixed(2)} DH`;
+    }
+
+    new bootstrap.Modal(document.getElementById('factureModal')).show();
+}
+
+function updateFactureItemQty(index, newQty) {
+    const qty = parseInt(newQty);
+    if (qty > 0) {
+        factureItems[index].qty = qty;
+        saveData();
+        openFactureModal();
+        updateFactureBadge();
+    }
+}
+
+function removeFromFacture(index) {
+    factureItems.splice(index, 1);
+    saveData();
+    openFactureModal();
+    updateFactureBadge();
+}
+
+function clearFacture() {
+    if (confirm("هل أنت تأكد من تفريغ الفاتورة بالكامل؟")) {
+        factureItems = [];
+        saveData();
+        openFactureModal();
+        updateFactureBadge();
+    }
+}
+
 function openAddProductModal(sIndex) {
     activeSubCategoryIndex = sIndex;
     new bootstrap.Modal(document.getElementById('addProductModal')).show();
@@ -236,7 +387,6 @@ function zoomProduct(sIndex, pIndex) {
     new bootstrap.Modal(document.getElementById('zoomModal')).show();
 }
 
-/* إضافة بدون شروط الإلزامية */
 function addCategory() {
     const title = document.getElementById('cat-title').value.trim();
     const fileInput = document.getElementById('cat-img-file');
@@ -330,7 +480,6 @@ function deleteProduct(sIndex, pIndex) {
     }
 }
 
-/* الشركات والفواتير */
 function renderCompanies() {
     const container = document.getElementById('companies-container');
     container.innerHTML = '';
@@ -363,6 +512,7 @@ function openCompany(index) {
     document.getElementById('company-invoices-section').classList.remove('d-none');
     renderInvoices();
 }
+
 function renderInvoices(filteredList = null) {
     const container = document.getElementById('invoices-vertical-container');
     container.innerHTML = '';
@@ -373,7 +523,6 @@ function renderInvoices(filteredList = null) {
         return;
     }
 
-    // ترتيب الفواتير من الكبير للصغير على حسب الـ ID
     invList = sortByIdDescending([...invList]);
 
     invList.forEach((inv) => {
@@ -399,14 +548,7 @@ function renderInvoices(filteredList = null) {
         `;
     });
 }
-function sortByIdDescending(list) {
-    return list.sort((a, b) => {
-        const idA = String(a.ref || a.id || '');
-        const idB = String(b.ref || b.id || '');
-        // الترتيب الأبجدي والرقمي العكسي (من الكبير للصغير)
-        return idB.localeCompare(idA, undefined, { numeric: true, sensitivity: 'base' });
-    });
-}
+
 function addCompany() {
     const title = document.getElementById('company-title').value.trim();
     const fileInput = document.getElementById('company-img-file');
