@@ -1,10 +1,103 @@
+// 🔗 Link Web App Google Apps Script
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcpkeZJEQsAwi0WTFxXEtA0FVLLii-NLnwq2LrkpRaSvn_pXjN4RqAFEzyLa0Hh_Rd/exec";
+
 let currentMode = null;
 let activeCategoryIndex = null;
 let activeSubCategoryIndex = null;
 let activeCompanyIndex = null;
 let isPriceVisible = true;
 let isFactureModeActive = false; 
-let factureItems = JSON.parse(localStorage.getItem('auto_parts_facture')) || [];
+
+let data = [];
+let companies = [];
+let factureItems = [];
+
+// ☁️ Backup Google Drive
+async function backupToGoogleDrive() {
+    if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("AKfycbx...")) {
+        alert("Veuillez d'abord configurer l'URL correcte dans app.js !");
+        return;
+    }
+
+    const payload = {
+        data: data,
+        companies: companies,
+        factureItems: factureItems
+    };
+
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Sauvegarde...`;
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "backup", payload: payload })
+        });
+        
+        const result = await response.json();
+        if (result.status === "success") {
+            alert("✅ Sauvegarde effectuée avec succès dans votre Google Drive !");
+        } else {
+            alert("❌ Erreur : " + result.message);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("❌ Connexion impossible à Google Drive.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+// ☁️ Restore Google Drive
+async function restoreFromGoogleDrive() {
+    if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("AKfycbx...")) {
+        alert("Veuillez d'abord configurer l'URL correcte dans app.js !");
+        return;
+    }
+
+    if (!confirm("Voulez-vous vraiment restaurer les données depuis Google Drive ?")) {
+        return;
+    }
+
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Restauration...`;
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "restore" })
+        });
+
+        const result = await response.json();
+        if (result.status === "success" && result.payload) {
+            data = result.payload.data || [];
+            companies = result.payload.companies || [];
+            factureItems = result.payload.factureItems || [];
+
+            await saveData();
+            updateFactureBadge();
+            renderCategories();
+            alert("✅ Données restaurées avec succès !");
+        } else {
+            alert("❌ Aucune sauvegarde trouvée : " + (result.message || "Aucune donnée"));
+        }
+    } catch (err) {
+        console.error(err);
+        alert("❌ Erreur de connexion à Google Drive lors de la restauration.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
 
 const defaultData = [
     {
@@ -38,14 +131,49 @@ const defaultCompanies = [
     }
 ];
 
-let data = JSON.parse(localStorage.getItem('auto_parts_data')) || defaultData;
-let companies = JSON.parse(localStorage.getItem('auto_parts_companies')) || defaultCompanies;
+// IndexedDB Initialization
+async function initAppStorage() {
+    try {
+        let savedData = await idbKeyval.get('auto_parts_data');
+        let savedCompanies = await idbKeyval.get('auto_parts_companies');
+        let savedFacture = await idbKeyval.get('auto_parts_facture');
 
-function saveData() {
-    localStorage.setItem('auto_parts_data', JSON.stringify(data));
-    localStorage.setItem('auto_parts_companies', JSON.stringify(companies));
-    localStorage.setItem('auto_parts_facture', JSON.stringify(factureItems));
+        if (!savedData && localStorage.getItem('auto_parts_data')) {
+            savedData = JSON.parse(localStorage.getItem('auto_parts_data'));
+            await idbKeyval.set('auto_parts_data', savedData);
+        }
+        if (!savedCompanies && localStorage.getItem('auto_parts_companies')) {
+            savedCompanies = JSON.parse(localStorage.getItem('auto_parts_companies'));
+            await idbKeyval.set('auto_parts_companies', savedCompanies);
+        }
+        if (!savedFacture && localStorage.getItem('auto_parts_facture')) {
+            savedFacture = JSON.parse(localStorage.getItem('auto_parts_facture'));
+            await idbKeyval.set('auto_parts_facture', savedFacture);
+        }
+
+        data = savedData || defaultData;
+        companies = savedCompanies || defaultCompanies;
+        factureItems = savedFacture || [];
+
+        updateFactureBadge();
+    } catch (e) {
+        console.error("Erreur d'initialisation IndexedDB:", e);
+        data = defaultData;
+        companies = defaultCompanies;
+    }
 }
+
+async function saveData() {
+    try {
+        await idbKeyval.set('auto_parts_data', data);
+        await idbKeyval.set('auto_parts_companies', companies);
+        await idbKeyval.set('auto_parts_facture', factureItems);
+    } catch (e) {
+        console.error("Erreur de sauvegarde dans IndexedDB:", e);
+    }
+}
+
+initAppStorage();
 
 function toggleFactureMode() {
     isFactureModeActive = !isFactureModeActive;
@@ -100,7 +228,7 @@ function enterMode(mode) {
         document.getElementById('admin-add-invoice-btn').classList.remove('d-none');
     } else {
         badge.className = "badge bg-primary fs-6 role-pill";
-        badge.innerText = "معلومات (Client)";
+        badge.innerText = "المعلومات (Client)";
         document.getElementById('admin-banner').classList.add('d-none');
         document.getElementById('admin-add-subcat-btn').classList.add('d-none');
         document.getElementById('admin-add-company-btn').classList.add('d-none');
@@ -480,6 +608,7 @@ function deleteProduct(sIndex, pIndex) {
     }
 }
 
+// 🏢 RENDU ET SUPPRESSION DES ENTREPRISES (CORRIGÉ)
 function renderCompanies() {
     const container = document.getElementById('companies-container');
     container.innerHTML = '';
@@ -487,6 +616,7 @@ function renderCompanies() {
     companies.forEach((comp, index) => {
         let deleteBtn = '';
         if (currentMode === 'admin') {
+            // CORRECTION: Appel à deleteCompany(event, index)
             deleteBtn = `<button class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 z-3" onclick="deleteCompany(event, ${index})"><i class="fa-solid fa-trash"></i></button>`;
         }
 
@@ -503,6 +633,15 @@ function renderCompanies() {
             </div>
         `;
     });
+}
+
+function deleteCompany(e, index) {
+    e.stopPropagation();
+    if (confirm("هل أنت تأكد من حذف هذه الشركة بجميع فواتيرها؟")) {
+        companies.splice(index, 1);
+        saveData();
+        renderCompanies();
+    }
 }
 
 function openCompany(index) {
@@ -598,17 +737,9 @@ function addInvoice() {
     }
 }
 
-function deleteCompany(e, index) {
-    e.stopPropagation();
-    if (confirm("حذف الشركة بجميع فواتيرها؟")) {
-        companies.splice(index, 1);
-        saveData();
-        renderCompanies();
-    }
-}
-
+// 🗑️ SUPPRESSION FACTURE
 function deleteInvoice(index) {
-    if (confirm("حذف هذه الفاتورة؟")) {
+    if (confirm("هل أنت تأكد من حذف هذه الفاتورة؟")) {
         companies[activeCompanyIndex].invoices.splice(index, 1);
         saveData();
         renderInvoices();
@@ -642,4 +773,11 @@ function finishModal(modalId, inputIds = []) {
         const inp = document.getElementById(id);
         if (inp) inp.value = '';
     });
+}
+
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(() => console.log("Service Worker enregistré avec succès !"))
+    .catch((err) => console.error("Erreur SW:", err));
 }
