@@ -22,23 +22,19 @@
             </a>
             
             <div class="d-flex align-items-center gap-2">
-                <!-- Bouton Fichiers Factures -->
                 <button id="factures-nav-btn" class="btn btn-outline-info btn-sm d-none" onclick="showSection('companies-section')">
                     <i class="fa-solid fa-folder-open me-1"></i> فواتير الشركات
                 </button>
 
-                <!-- Bouton Cacher/Afficher Prix -->
                 <button id="toggle-price-btn" class="btn btn-outline-warning btn-sm" onclick="togglePriceVisibility()" title="إخفاء/إظهار الثمن">
                     <i class="fa-solid fa-eye" id="price-icon"></i>
                 </button>
 
-                <!-- Switch Mode Facture -->
                 <div class="form-check form-switch text-white m-0 d-none" id="facture-switch-container">
                     <input class="form-check-input" type="checkbox" id="facture-mode-switch" onchange="toggleFactureMode(this.checked)">
                     <label class="form-check-input-label small text-warning fw-bold" for="facture-mode-switch">منشئ الفواتير</label>
                 </div>
 
-                <!-- Bouton Voir Facture -->
                 <button id="view-facture-btn" class="btn btn-success btn-sm d-none" onclick="openFactureModal()">
                     <i class="fa-solid fa-file-invoice-dollar me-1"></i> الفاتورة (<span id="facture-count">0</span>)
                 </button>
@@ -64,7 +60,7 @@
                             <i class="fa-solid fa-user-gear fs-1"></i>
                         </div>
                         <h4 class="fw-bold text-danger">تعديلات (Admin)</h4>
-                        <p class="text-muted small">إضافة الأصناف والقطع، وإضافة شركات وفواتير مصورة جديدة.</p>
+                        <p class="text-muted small">إضافة الأصناف، المجموعات، القطع، وإدارة الفواتير.</p>
                         <button class="btn btn-danger w-100 mt-auto fw-bold">دخول كـ أدمن</button>
                     </div>
                 </div>
@@ -75,8 +71,8 @@
                             <i class="fa-solid fa-boxes-packing fs-1"></i>
                         </div>
                         <h4 class="fw-bold text-primary">المعلومات (Client)</h4>
-                        <p class="text-muted small">تصفح القطع، البحث عن فواتير الشركات، ومعاينة الصور.</p>
-                        <button class="btn btn-primary w-100 mt-auto fw-bold">تصفح القطع والسيارات</button>
+                        <p class="text-muted small">تصفح القطع، معاينة الفواتير، وإنشاء الطلبيات.</p>
+                        <button class="btn btn-primary w-100 mt-auto fw-bold">تصفح القطع</button>
                     </div>
                 </div>
             </div>
@@ -90,69 +86,66 @@
             <div class="container d-flex justify-content-between align-items-center">
                 <div><i class="fa-solid fa-user-shield me-2"></i> وضع التعديلات (Admin Mode)</div>
                 <button class="btn btn-light btn-sm fw-bold text-danger" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-                    <i class="fa-solid fa-plus me-1"></i> إضافة صنف قطع جديد
+                    <i class="fa-solid fa-plus me-1"></i> إضافة صنف جديد
                 </button>
             </div>
         </div>
 
-        <!-- SECTION 2: CATEGORIES (قطع غيار) -->
+        <!-- SECTION 2: CATEGORIES MAIN -->
         <section id="categories-section" class="py-4">
             <div class="container">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="fw-bold border-start border-primary border-4 ps-2 text-white">أصناف قطع الغيار المتوفرة</h4>
-                </div>
+                <h4 class="fw-bold border-start border-primary border-4 ps-2 text-white mb-4">أصناف قطع الغيار الرئيسية</h4>
                 <div class="row g-4" id="categories-container"></div>
             </div>
         </section>
 
-        <!-- SECTION 3: PRODUCTS GRID -->
+        <!-- SECTION 3: PRODUCTS & SUB-GROUPS GRID (GRID LIKE SKETCH) -->
         <section id="products-section" class="py-4 d-none">
             <div class="container">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                     <button class="btn btn-outline-secondary text-white" onclick="showSection('categories-section')">
-                        <i class="fa-solid fa-arrow-right me-1"></i> الرجوع للأصناف
+                        <i class="fa-solid fa-arrow-right me-1"></i> الرجوع للأصناف الرئيسية
                     </button>
-                    <h4 class="fw-bold m-0 text-white" id="current-category-title">القطع المتوفرة</h4>
-                    <button id="admin-add-product-btn" class="btn btn-success d-none" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                        <i class="fa-solid fa-plus me-1"></i> إضافة قطعة جديدة
+                    <h3 class="fw-bold m-0 text-white" id="current-category-title">القطع</h3>
+                    <button id="admin-add-subcat-btn" class="btn btn-info text-white fw-bold d-none" data-bs-toggle="modal" data-bs-target="#addSubCategoryModal">
+                        <i class="fa-solid fa-folder-plus me-1"></i> إضافة صنف فرعي جديد
                     </button>
                 </div>
 
                 <!-- SEARCH BAR -->
-                <div class="card border-0 shadow-sm mb-4 p-3">
+                <div class="card border-0 shadow-sm mb-4 p-3 bg-dark text-white">
                     <div class="row g-2 align-items-center">
-                        <div class="col-md-8 col-12">
+                        <div class="col-md-9">
                             <div class="input-group">
-                                <span class="input-group-text bg-dark border-end-0 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
-                                <input type="text" id="search-input" class="form-control border-start-0" placeholder="بحث بالمرجع (Référence) أو باسم القطعة..." onkeyup="filterProducts()">
+                                <span class="input-group-text bg-secondary border-0 text-white"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                <input type="text" id="search-input" class="form-control border-0 bg-dark text-white" placeholder="بحث بالمرجع (ID / Référence) أو اسم القطعة..." onkeyup="filterProducts()">
                             </div>
                         </div>
-                        <div class="col-md-4 col-12 text-md-end text-muted small">
-                            <span id="product-count">0</span> قطعة متوفرة <br>
-                            <span class="text-info small"><i class="fa-solid fa-info-circle"></i> اضغط مرتين (Double Click) للتكبير بالكامل</span>
+                        <div class="col-md-3 text-md-end text-muted small">
+                            <i class="fa-solid fa-info-circle text-info"></i> اضغط مرتين (Double Click) لتكبير الصورة
                         </div>
                     </div>
                 </div>
 
-                <!-- PRODUCTS GRID -->
-                <div class="row g-3" id="products-grid-container"></div>
+                <!-- SUB-CATEGORIES ROWS CONTAINER -->
+                <div class="d-flex flex-column gap-5" id="subcategories-container"></div>
             </div>
         </section>
 
-        <!-- SECTION 4: COMPANIES LIST (مجلدات الشركات) -->
+        <!-- SECTION 4: COMPANIES (مجلدات الشركات) -->
         <section id="companies-section" class="py-4 d-none">
             <div class="container">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="fw-bold border-start border-info border-4 ps-2 text-white">شركات الفواتير المصورة</h4>
+                    <h4 class="fw-bold border-start border-info border-4 ps-2 text-white">فواتير الشركات الكبرى</h4>
                     <button id="admin-add-company-btn" class="btn btn-info btn-sm fw-bold text-white d-none" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
-                        <i class="fa-solid fa-folder-plus me-1"></i> إضافة شركة / كليون جديد
+                        <i class="fa-solid fa-folder-plus me-1"></i> إضافة شركة جديدة
                     </button>
                 </div>
                 <div class="row g-4" id="companies-container"></div>
             </div>
         </section>
 
-        <!-- SECTION 5: COMPANY INVOICES FULL VERTICAL VIEW (فواتير الشركة كبيرة وحدة تحت وحدة) -->
+        <!-- SECTION 5: COMPANY INVOICES (VERTICAL LARGE) -->
         <section id="company-invoices-section" class="py-4 d-none">
             <div class="container">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
@@ -161,33 +154,24 @@
                     </button>
                     <h3 class="fw-bold m-0 text-info" id="current-company-title">فواتير الشركة</h3>
                     <button id="admin-add-invoice-btn" class="btn btn-success d-none" data-bs-toggle="modal" data-bs-target="#addInvoiceModal">
-                        <i class="fa-solid fa-plus me-1"></i> إضافة فاتورة جديدة
+                        <i class="fa-solid fa-plus me-1"></i> إضافة فاتورة مصورة جديدة
                     </button>
                 </div>
 
-                <!-- SEARCH INVOICES BAR -->
                 <div class="card border-0 shadow-sm mb-4 p-3 bg-dark text-white">
-                    <div class="row g-2 align-items-center">
-                        <div class="col-md-9 col-12">
-                            <div class="input-group">
-                                <span class="input-group-text bg-secondary border-0 text-white"><i class="fa-solid fa-magnifying-glass"></i></span>
-                                <input type="text" id="invoice-search-input" class="form-control border-0 bg-dark text-white" placeholder="بحث باسم الفاتورة أو المرجع (ID / Référence)..." onkeyup="filterInvoices()">
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-12 text-md-end text-muted small">
-                            مجموع الفواتير: <span id="invoice-count" class="fw-bold text-info">0</span>
-                        </div>
+                    <div class="input-group">
+                        <span class="input-group-text bg-secondary border-0 text-white"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="invoice-search-input" class="form-control border-0 bg-dark text-white" placeholder="بحث باسم الفاتورة أو المرجع (ID)..." onkeyup="filterInvoices()">
                     </div>
                 </div>
 
-                <!-- VERTICAL INVOICES CONTAINER (واحدة تحت واحدة كبيرة) -->
                 <div class="d-flex flex-column gap-5" id="invoices-vertical-container"></div>
             </div>
         </section>
 
     </div>
 
-    <!-- MODAL: EXTRA LARGE ZOOM (Double Click) -->
+    <!-- MODAL: EXTRA LARGE ZOOM -->
     <div class="modal fade" id="zoomModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content text-center p-2">
@@ -209,164 +193,70 @@
         </div>
     </div>
 
-    <!-- MODAL: FACTURE GENERATOR -->
-    <div class="modal fade" id="factureModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-receipt me-2"></i> الفاتورة (Facture)</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4" id="facture-print-area">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle text-center mb-4">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>DESCRIPTION (الوصف)</th>
-                                    <th>PRIX (الثمن)</th>
-                                    <th>QUANTITÉ (الكمية)</th>
-                                    <th>TOTAL (المجموع)</th>
-                                    <th class="no-print">إجراء</th>
-                                </tr>
-                            </thead>
-                            <tbody id="facture-table-body"></tbody>
-                        </table>
-                    </div>
-                    <div class="row justify-content-end">
-                        <div class="col-md-5">
-                            <div class="card p-3 bg-light border-0 shadow-sm text-dark">
-                                <div class="d-flex justify-content-between fw-bold fs-5">
-                                    <span>TOTAL :</span>
-                                    <span id="facture-total" class="text-danger">0.00 DH</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-danger" onclick="clearFacture()">تفريغ الفاتورة</button>
-                    <button type="button" class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print me-1"></i> طباعة / Imprimer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: ADD CATEGORY -->
+    <!-- MODALS FORMULAIRES -->
     <div class="modal fade" id="addCategoryModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">إضافة صنف جديد</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
+                <div class="modal-header"><h5 class="modal-title fw-bold">إضافة صنف رئيسي</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">اسم الصنف</label>
-                        <input type="text" id="cat-title" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">صورة الصنف</label>
-                        <input type="file" id="cat-img-file" class="form-control" accept="image/*">
-                    </div>
+                    <div class="mb-3"><label class="form-label">اسم الصنف (مثلاً: الرولمات)</label><input type="text" id="cat-title" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">صورة غلاف الصنف</label><input type="file" id="cat-img-file" class="form-control" accept="image/*"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="button" class="btn btn-primary" onclick="addCategory()">حفظ الصنف</button>
-                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-primary" onclick="addCategory()">حفظ</button></div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL: ADD PRODUCT -->
+    <div class="modal fade" id="addSubCategoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title fw-bold">إضافة صنف فرعي جديد</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <div class="mb-3"><label class="form-label">اسم الصنف الفرعي (مثلاً: صنف أ / Roulements Avant)</label><input type="text" id="subcat-title" class="form-control"></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-info text-white" onclick="addSubCategory()">حفظ</button></div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="addProductModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">إضافة قطعة جديدة</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
+                <div class="modal-header"><h5 class="modal-title fw-bold">إضافة قطعة جديدة</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-primary">مرجع القطعة (Référence)</label>
-                        <input type="text" id="prod-ref" class="form-control" placeholder="مثال: ZN101630">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">اسم القطعة والسيارات المطابقة</label>
-                        <input type="text" id="prod-name" class="form-control" placeholder="مثال: LANCEUR R9 D-R11">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">معلومات إضافية / تفاصيل</label>
-                        <textarea id="prod-info" class="form-control" rows="2"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">الثمن (DH)</label>
-                        <input type="number" step="0.01" id="prod-price" class="form-control" placeholder="93.80">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">صورة القطعة</label>
-                        <input type="file" id="prod-img-file" class="form-control" accept="image/*">
-                    </div>
+                    <div class="mb-3"><label class="form-label fw-bold text-primary">مرجع القطعة / ID</label><input type="text" id="prod-ref" class="form-control" placeholder="مثال: ZN101630"></div>
+                    <div class="mb-3"><label class="form-label">اسم القطعة والتفاصيل</label><input type="text" id="prod-name" class="form-control" placeholder="مثال: Roulement Golf 7"></div>
+                    <div class="mb-3"><label class="form-label">الثمن (DH)</label><input type="number" step="0.01" id="prod-price" class="form-control" placeholder="93.80"></div>
+                    <div class="mb-3"><label class="form-label">صورة القطعة</label><input type="file" id="prod-img-file" class="form-control" accept="image/*"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="button" class="btn btn-success" onclick="addProduct()">إضافة القطعة</button>
-                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-success" onclick="addProduct()">حفظ القطعة</button></div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL: ADD COMPANY -->
     <div class="modal fade" id="addCompanyModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">إضافة شركة / كليون جديد</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
+                <div class="modal-header"><h5 class="modal-title fw-bold">إضافة شركة جديدة</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">اسم الشركة / الكليون (مثلاً: Samsung, Dacia, Ste X)</label>
-                        <input type="text" id="company-title" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">صورة غلاف المجلد</label>
-                        <input type="file" id="company-img-file" class="form-control" accept="image/*">
-                    </div>
+                    <div class="mb-3"><label class="form-label">اسم الشركة</label><input type="text" id="company-title" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">صورة الغلاف</label><input type="file" id="company-img-file" class="form-control" accept="image/*"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="button" class="btn btn-info text-white" onclick="addCompany()">حفظ الشركة</button>
-                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-info text-white" onclick="addCompany()">حفظ</button></div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL: ADD INVOICE PHOTO -->
     <div class="modal fade" id="addInvoiceModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">إضافة صورة فاتورة جديدة</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
+                <div class="modal-header"><h5 class="modal-title fw-bold">إضافة فاتورة جديدة</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-info">مرجع الفاتورة / ID</label>
-                        <input type="text" id="invoice-ref" class="form-control" placeholder="مثال: FAC-2026-001">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">عنوان / اسم الفاتورة</label>
-                        <input type="text" id="invoice-title" class="form-control" placeholder="مثال: فاتورة شهر أكتوبر">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">صورة الفاتورة (من التليفون)</label>
-                        <input type="file" id="invoice-img-file" class="form-control" accept="image/*">
-                    </div>
+                    <div class="mb-3"><label class="form-label text-info fw-bold">مرجع الفاتورة / ID</label><input type="text" id="invoice-ref" class="form-control" placeholder="FAC-2026-001"></div>
+                    <div class="mb-3"><label class="form-label">اسم الفاتورة</label><input type="text" id="invoice-title" class="form-control" placeholder="فاتورة شهر أكتوبر"></div>
+                    <div class="mb-3"><label class="form-label">صورة الفاتورة</label><input type="file" id="invoice-img-file" class="form-control" accept="image/*"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="button" class="btn btn-success" onclick="addInvoice()">حفظ الفاتورة</button>
-                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-success" onclick="addInvoice()">حفظ الفاتورة</button></div>
             </div>
         </div>
     </div>

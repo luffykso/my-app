@@ -15,7 +15,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(10, 15, 25, 0.84);
+    background: rgba(10, 15, 25, 0.86);
     z-index: -1;
 }
 
@@ -29,37 +29,16 @@ body::before {
 }
 
 /* Glassmorphism Cards */
-.card, .mode-card, .category-card, .product-card, .invoice-card-full {
+.card, .mode-card, .category-card, .product-card-large, .invoice-card-full {
     background: rgba(20, 28, 45, 0.88) !important;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(56, 189, 248, 0.2) !important;
     color: #ffffff !important;
 }
 
-.mode-card {
-    border-radius: 18px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.mode-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 30px rgba(14, 165, 233, 0.3) !important;
-}
-
-.cursor-pointer {
-    cursor: pointer;
-}
-
-.category-card {
-    border-radius: 12px;
-    transition: transform 0.25s ease;
-    cursor: pointer;
-    overflow: hidden;
-}
-
-.category-card:hover {
+.mode-card:hover, .category-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3) !important;
 }
 
 .category-card img {
@@ -67,61 +46,91 @@ body::before {
     object-fit: cover;
 }
 
-/* PRODUCT CARD STYLING */
-.product-card {
-    border-radius: 10px;
+.product-card-large {
+    border-radius: 12px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 340px; /* L-height l-mo7addad dyal l-card kamla */
     position: relative;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: rgba(20, 28, 45, 0.95) !important;
+}
+.product-card-large:hover {
+    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.35);
+    transform: translateY(-3px);
 }
 
-.product-card:hover {
-    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.25);
-}
-
-.ref-badge {
-    background-color: #0284c7;
-    color: #ffffff;
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 4px;
-}
-
-.product-img-box {
-    height: 160px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-    background-color: rgba(255, 255, 255, 0.95);
-    border-radius: 6px;
-    margin: 8px;
-}
-
-.product-img-box img {
-    max-height: 100%;
-    max-width: 100%;
-    object-fit: contain;
-}
-
-.product-title {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #e2e8f0;
-    line-height: 1.3;
-    height: 2.5em;
+/* 2. L-Container dyal l-image kay-takbar w kay-mlo GA3 l-misaha li foq */
+.product-img-large-box {
+    flex: 1; /* Kay-takbar w kay-mlli k3 l-fada9 l-khawi */
+    width: 100%;
+    position: relative;
     overflow: hidden;
-    text-transform: uppercase;
+    background-color: #0f172a;
 }
 
-.product-price {
+/* 3. L-Image kat-t-mlla 100% f width w height bla distortion */
+.product-img-large-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Kat-mlla l-div kaml b nqawa */
+    object-position: center;
+    display: block;
+}
+
+/* 4. L-Partie l-t7taniya kat-jii sghira w m-nssqa l-ta7t dima */
+.product-details-bottom {
+    padding: 10px;
+    background: rgba(10, 15, 25, 0.95);
+    border-top: 1px solid rgba(56, 189, 248, 0.2);
+    text-align: center;
+    flex-shrink: 0; /* Ma kat-kmasch ma kat-takbarch, kat-bqa sghira l-ta7t */
+}
+
+.product-title-sm {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #f8fafc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+
+.product-price-sm {
     color: #38bdf8;
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-weight: 800;
 }
+.ref-badge-sm {
+    background-color: #0284c7;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
 
-/* VERTICAL FULL INVOICE STYLING (الفواتير المصورة الكبيرة) */
+/* ADD '+' CARD IN GRID (Bouton Plus dans la grille) */
+.add-product-plus-card {
+    border: 2px dashed #0284c7 !important;
+    background: rgba(2, 132, 199, 0.1) !important;
+    border-radius: 10px;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.add-product-plus-card:hover {
+    background: rgba(2, 132, 199, 0.25) !important;
+}
+
+/* INVOICE LARGE VERTICAL */
 .invoice-card-full {
     border-radius: 14px;
     overflow: hidden;
@@ -134,7 +143,6 @@ body::before {
     border-radius: 8px;
     display: flex;
     justify-content: center;
-    align-items: center;
 }
 
 .invoice-img-large-box img {
@@ -142,7 +150,6 @@ body::before {
     max-width: 1000px;
     height: auto;
     object-fit: contain;
-    border-radius: 4px;
 }
 
 /* Modal Dark Adjustments */
@@ -152,47 +159,13 @@ body::before {
     border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
-.modal-header, .modal-footer {
-    border-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-.form-control, .form-select {
+.form-control {
     background-color: #0f172a !important;
     color: #ffffff !important;
     border-color: #334155 !important;
 }
 
-.form-control:focus {
-    border-color: #38bdf8 !important;
-    box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25) !important;
-}
-
-.text-muted {
-    color: #94a3b8 !important;
-}
-
-/* Print Styling */
-@media print {
-    body * {
-        visibility: hidden;
-    }
-    #facture-print-area, #facture-print-area * {
-        visibility: visible;
-        color: #000000 !important;
-    }
-    #facture-print-area {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        background: #ffffff !important;
-    }
-    .no-print {
-        display: none !important;
-    }
-}
-
-/* Fix stuck modal overlay */
+/* Fix modal backdrop overlay */
 body:not(.modal-open) .modal-backdrop {
     display: none !important;
 }
