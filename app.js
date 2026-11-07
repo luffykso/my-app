@@ -132,7 +132,6 @@ function openCategory(index) {
     document.getElementById('products-section').classList.remove('d-none');
     renderSubCategories();
 }
-
 function renderSubCategories(filteredQuery = null) {
     const container = document.getElementById('subcategories-container');
     container.innerHTML = '';
@@ -146,6 +145,7 @@ function renderSubCategories(filteredQuery = null) {
     subCats.forEach((subCat, sIndex) => {
         let products = subCat.products || [];
 
+        // 1. فلترة البحث إذا كانت كاينا
         if (filteredQuery) {
             products = products.filter(p => 
                 (p.ref && p.ref.toLowerCase().includes(filteredQuery)) || 
@@ -153,23 +153,29 @@ function renderSubCategories(filteredQuery = null) {
             );
         }
 
+        // 2. ترتيب القطع من الكبير للصغير على حسب الـ Référence (ID)
+        products = sortByIdDescending([...products]);
+
         let deleteSubBtn = '';
         if (currentMode === 'admin') {
             deleteSubBtn = `<button class="btn btn-outline-danger btn-sm ms-2" onclick="deleteSubCategory(${sIndex})"><i class="fa-solid fa-trash"></i></button>`;
         }
 
         let productsCardsHtml = '';
-        products.forEach((p, pIndex) => {
+        products.forEach((p) => {
+            // نجيبو الأنديكس الحقيقي للقطعة فـ الأراي الأصلية باش الحذف يخدم صح
+            const realPIndex = subCat.products.indexOf(p);
+            
             const priceVal = p.price !== "" && p.price !== null && p.price !== undefined ? parseFloat(p.price).toFixed(2) : "--";
             const displayPrice = isPriceVisible ? `${priceVal} DH` : `*** DH`;
             let deleteProdBtn = '';
             if (currentMode === 'admin') {
-                deleteProdBtn = `<button class="btn btn-danger btn-sm me-1" onclick="deleteProduct(${sIndex}, ${pIndex})"><i class="fa-solid fa-trash"></i></button>`;
+                deleteProdBtn = `<button class="btn btn-danger btn-sm me-1" onclick="deleteProduct(${sIndex}, ${realPIndex})"><i class="fa-solid fa-trash"></i></button>`;
             }
 
             productsCardsHtml += `
                 <div class="col-6 col-md-4 col-lg-3">
-                    <div class="product-card-large" ondblclick="zoomProduct(${sIndex}, ${pIndex})">
+                    <div class="product-card-large" ondblclick="zoomProduct(${sIndex}, ${realPIndex})">
                         <div class="d-flex justify-content-between align-items-center p-2 bg-dark border-bottom border-secondary">
                             <span class="ref-badge-sm">${p.ref || 'N/A'}</span>
                             ${deleteProdBtn}
@@ -212,7 +218,6 @@ function renderSubCategories(filteredQuery = null) {
         `;
     });
 }
-
 function openAddProductModal(sIndex) {
     activeSubCategoryIndex = sIndex;
     new bootstrap.Modal(document.getElementById('addProductModal')).show();
@@ -358,21 +363,24 @@ function openCompany(index) {
     document.getElementById('company-invoices-section').classList.remove('d-none');
     renderInvoices();
 }
-
 function renderInvoices(filteredList = null) {
     const container = document.getElementById('invoices-vertical-container');
     container.innerHTML = '';
-    const invList = filteredList || companies[activeCompanyIndex].invoices;
+    let invList = filteredList || companies[activeCompanyIndex].invoices;
 
     if (invList.length === 0) {
         container.innerHTML = `<div class="text-center py-5 text-muted fs-5">لا توجد فواتير مصورة لهذه الشركة.</div>`;
         return;
     }
 
-    invList.forEach((inv, index) => {
+    // ترتيب الفواتير من الكبير للصغير على حسب الـ ID
+    invList = sortByIdDescending([...invList]);
+
+    invList.forEach((inv) => {
+        const realIndex = companies[activeCompanyIndex].invoices.indexOf(inv);
         let deleteBtn = '';
         if (currentMode === 'admin') {
-            deleteBtn = `<button class="btn btn-danger btn-sm" onclick="deleteInvoice(${index})"><i class="fa-solid fa-trash me-1"></i> حذف</button>`;
+            deleteBtn = `<button class="btn btn-danger btn-sm" onclick="deleteInvoice(${realIndex})"><i class="fa-solid fa-trash me-1"></i> حذف</button>`;
         }
 
         container.innerHTML += `
@@ -391,7 +399,14 @@ function renderInvoices(filteredList = null) {
         `;
     });
 }
-
+function sortByIdDescending(list) {
+    return list.sort((a, b) => {
+        const idA = String(a.ref || a.id || '');
+        const idB = String(b.ref || b.id || '');
+        // الترتيب الأبجدي والرقمي العكسي (من الكبير للصغير)
+        return idB.localeCompare(idA, undefined, { numeric: true, sensitivity: 'base' });
+    });
+}
 function addCompany() {
     const title = document.getElementById('company-title').value.trim();
     const fileInput = document.getElementById('company-img-file');
