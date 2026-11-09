@@ -1,0 +1,6 @@
+{
+  "appId": "com.autoparts.app",
+  "appName": "AutoParts",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
