@@ -105,14 +105,14 @@ const defaultData = [
         image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=500&q=80",
         subCategories: [
             {
-                title: "صنف أ (Roulements Avant)",
+                title: "Roulements Avant",
                 products: [
                     { ref: "ZN101630", name: "LANCEUR R9 D-R11 D-UNO D", price: 93.80, available: true, image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=500&q=80" },
                     { ref: "79347_F", name: "ROULEMENT GOLF 7", price: 169.98, available: true, image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=500&q=80" }
                 ]
             },
             {
-                title: "صنف ب (Roulements Arrière)",
+                title: "Roulements Arrière",
                 products: [
                     { ref: "RL-8801", name: "ROULEMENT PEUGEOT 208", price: 280.00, available: true, image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=500&q=80" }
                 ]
