@@ -2,7 +2,6 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AutoParts Pro</title>
     <!-- Bootstrap 5 CSS -->
@@ -21,39 +20,31 @@
     <!-- NAVBAR FULL WIDTH CLEAN & PRO -->
     <nav class="navbar app-navbar sticky-top">
         <div class="container-fluid px-4 navbar-container">
-            <!-- Brand / Title -->
             <a class="navbar-brand app-title" href="#" onclick="showSection('welcome-section')">
                 <i class="fa-solid fa-layer-group text-info me-2"></i>AutoParts <small class="text-muted fs-6">Pro</small>
             </a>
             
-            <!-- Actions & Navigation Buttons -->
             <div class="nav-actions">
-                <!-- زر فواتير الشركات -->
                 <button id="factures-nav-btn" class="btn btn-app-action d-none" onclick="showSection('companies-section')">
                     <i class="fa-solid fa-folder-open text-info me-1"></i> فواتير الشركات
                 </button>
 
-                <!-- زر إخفاء/إظهار الثمن -->
                 <button id="toggle-price-btn" class="btn btn-app-action" onclick="togglePriceVisibility()" title="إخفاء/إظهار الثمن">
                     <i class="fa-solid fa-eye text-warning" id="price-icon"></i>
                 </button>
 
-                <!-- 🟢🔴 زر تفعيل/إلغاء وضع الفاتورة -->
                 <div id="facture-toggle-container" class="d-none">
                     <button id="facture-mode-toggle-btn" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold shadow-sm" onclick="toggleFactureMode()">
                         <i class="fa-solid fa-circle-xmark me-1"></i> وضع الفاتورة: معطّل
                     </button>
                 </div>
 
-                <!-- زر معاينة الفاتورة -->
                 <button id="view-facture-btn" class="btn btn-success btn-sm rounded-pill d-none px-3 fw-bold" onclick="openFactureModal()">
                     <i class="fa-solid fa-file-invoice-dollar me-1"></i> الفاتورة (<span id="facture-count">0</span>)
                 </button>
 
-                <!-- شارة الوضع (Admin / Client) -->
                 <span id="role-badge" class="badge bg-secondary role-pill">اختر الوضع</span>
                 
-                <!-- زر الصفحة الرئيسية -->
                 <button id="home-btn" class="btn btn-app-action d-none" onclick="showSection('welcome-section')" title="الرئيسية">
                     <i class="fa-solid fa-house"></i>
                 </button>
@@ -96,20 +87,17 @@
     <!-- MAIN APP CONTENT -->
     <div id="app-content" class="d-none">
 
-        <<!-- ADMIN BANNER WITH BACKUP & RESTORE BUTTONS -->
-        <div id="admin-banner" class="bg-danger text-white py-2 mb-4 d-none shadow-sm">
+        <!-- ADMIN BANNER -->
+        <div id="admin-banner" class="bg-danger text-white py-2 mb-3 d-none shadow-sm">
             <div class="container-fluid px-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div class="fw-bold"><i class="fa-solid fa-user-shield me-2"></i> وضع التعديلات (Admin Mode)</div>
                 <div class="d-flex align-items-center gap-2">
-                    <!-- Bouton Backup -->
                     <button class="btn btn-light btn-sm fw-bold text-success rounded-pill px-3" onclick="backupToGoogleDrive()">
                         <i class="fa-solid fa-cloud-arrow-up me-1"></i> حفظ سحابي (Backup)
                     </button>
-                    <!-- Bouton Restore -->
                     <button class="btn btn-light btn-sm fw-bold text-warning rounded-pill px-3" onclick="restoreFromGoogleDrive()">
                         <i class="fa-solid fa-cloud-arrow-down me-1"></i> استرجاع (Restore)
                     </button>
-                    <!-- Bouton Add Category -->
                     <button class="btn btn-light btn-sm fw-bold text-danger rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
                         <i class="fa-solid fa-plus me-1"></i> إضافة صنف جديد
                     </button>
@@ -126,9 +114,9 @@
         </section>
 
         <!-- SECTION 3: PRODUCTS & SUB-GROUPS GRID -->
-        <section id="products-section" class="py-3 d-none">
+        <section id="products-section" class="py-2 d-none">
             <div class="container-fluid px-4">
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
                     <button class="btn btn-outline-secondary text-white rounded-pill btn-sm px-3" onclick="showSection('categories-section')">
                         <i class="fa-solid fa-arrow-right me-1"></i> الرجوع للأصناف الرئيسية
                     </button>
@@ -139,7 +127,7 @@
                 </div>
 
                 <!-- SEARCH BAR -->
-                <div class="card border-0 shadow-sm mb-4 p-3 bg-dark text-white">
+                <div class="card border-0 shadow-sm mb-3 p-2 bg-dark text-white">
                     <div class="row g-2 align-items-center">
                         <div class="col-md-9">
                             <div class="input-group">
@@ -148,12 +136,13 @@
                             </div>
                         </div>
                         <div class="col-md-3 text-md-end text-muted small">
-                            <i class="fa-solid fa-info-circle text-info me-1"></i> اضغط مرتين (Double Click) للتكبير
+                            <i class="fa-solid fa-info-circle text-info me-1"></i> اضغط مرتين (Double Click) لتكبير القطعة
                         </div>
                     </div>
                 </div>
 
-                <div class="d-flex flex-column gap-5" id="subcategories-container"></div>
+                <!-- 🟢 MODIFICATION: Masafa sghira (gap-2) -->
+                <div class="d-flex flex-column gap-2" id="subcategories-container"></div>
             </div>
         </section>
 
@@ -196,23 +185,25 @@
 
     </div>
 
-    <!-- MODAL: EXTRA LARGE ZOOM -->
+    <!-- 🟢 MODAL: ZOOM MODAL FULL SPACE (BLA BLASA BIDA KHAWYA) -->
     <div class="modal fade" id="zoomModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content text-center p-2">
-                <div class="modal-header border-0 pb-0">
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-content text-center p-2 bg-dark text-white border border-secondary shadow-lg">
+                <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-center">
+                    <button id="zoom-edit-btn" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold d-none" onclick="openEditFromZoom()">
+                        <i class="fa-solid fa-pen-to-square me-1"></i> تعديل
+                    </button>
+                    <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-1">
+                <div class="modal-body p-2">
                     <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
                         <span id="zoom-ref-badge" class="badge bg-danger fs-4"></span>
                         <h3 id="zoom-title" class="fw-bold text-white m-0"></h3>
                     </div>
-                    <div class="bg-white p-2 rounded-3 mb-2" style="max-height: 80vh; display: flex; align-items: center; justify-content: center; overflow: auto;">
-                        <img id="zoom-img" src="" alt="" style="max-height: 75vh; width: auto; max-width: 100%; object-fit: contain;">
+                    <!-- 🟢 Hnayna l-fond l-biad w khallina taswira t-akhod 100% dyal l-espace -->
+                    <div class="p-0 rounded-3 mb-1" style="height: 78vh; width: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #121212;">
+                        <img id="zoom-img" src="" alt="" style="width: 100%; height: 100%; object-fit: contain;">
                     </div>
-                    <p id="zoom-info" class="text-muted mb-1 fs-5"></p>
-                    <div id="zoom-price" class="fs-2 fw-bold text-info"></div>
                 </div>
             </div>
         </div>
@@ -297,6 +288,31 @@
                     <div class="mb-3"><label class="form-label">صورة القطعة</label><input type="file" id="prod-img-file" class="form-control" accept="image/*"></div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-success rounded-pill px-4" onclick="addProduct()">حفظ القطعة</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT PRODUCT -->
+    <div class="modal fade" id="editProductModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-pen-to-square me-2"></i>تعديل القطعة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <img id="edit-prod-img-preview" src="" style="max-height: 140px; object-fit: contain;" class="rounded border p-1 bg-white">
+                    </div>
+                    <div class="mb-3"><label class="form-label fw-bold text-primary">مرجع القطعة / ID</label><input type="text" id="edit-prod-ref" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">اسم القطعة والتفاصيل</label><input type="text" id="edit-prod-name" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">الثمن (DH)</label><input type="number" step="0.01" id="edit-prod-price" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">تغيير الصورة (اختياري)</label><input type="file" id="edit-prod-img-file" class="form-control" accept="image/*"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-warning rounded-pill px-4 fw-bold" onclick="updateProduct()">حفظ التعديلات</button>
+                </div>
             </div>
         </div>
     </div>

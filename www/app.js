@@ -5,6 +5,10 @@ let currentMode = null;
 let activeCategoryIndex = null;
 let activeSubCategoryIndex = null;
 let activeCompanyIndex = null;
+
+let editingSubCategoryIndex = null;
+let editingProductIndex = null;
+
 let isPriceVisible = true;
 let isFactureModeActive = false; 
 
@@ -296,11 +300,7 @@ function openCategory(index) {
 }
 
 function sortByIdDescending(list) {
-    return list.sort((a, b) => {
-        const idA = String(a.ref || a.id || '');
-        const idB = String(b.ref || b.id || '');
-        return idB.localeCompare(idA, undefined, { numeric: true, sensitivity: 'base' });
-    });
+    return list.slice().reverse();
 }
 
 function renderSubCategories(filteredQuery = null) {
@@ -314,16 +314,19 @@ function renderSubCategories(filteredQuery = null) {
     }
 
     subCats.forEach((subCat, sIndex) => {
-        let products = subCat.products || [];
+        let productsWithOriginalIndex = (subCat.products || []).map((p, originalIndex) => ({
+            product: p,
+            originalIndex: originalIndex
+        }));
 
         if (filteredQuery) {
-            products = products.filter(p => 
-                (p.ref && p.ref.toLowerCase().includes(filteredQuery)) || 
-                (p.name && p.name.toLowerCase().includes(filteredQuery))
+            productsWithOriginalIndex = productsWithOriginalIndex.filter(item => 
+                (item.product.ref && item.product.ref.toLowerCase().includes(filteredQuery)) || 
+                (item.product.name && item.product.name.toLowerCase().includes(filteredQuery))
             );
         }
 
-        products = sortByIdDescending([...products]);
+        const sortedProducts = sortByIdDescending(productsWithOriginalIndex);
 
         let deleteSubBtn = '';
         if (currentMode === 'admin') {
@@ -331,8 +334,9 @@ function renderSubCategories(filteredQuery = null) {
         }
 
         let productsCardsHtml = '';
-        products.forEach((p) => {
-            const realPIndex = subCat.products.indexOf(p);
+        sortedProducts.forEach((item) => {
+            const p = item.product;
+            const realPIndex = item.originalIndex;
             
             const priceVal = p.price !== "" && p.price !== null && p.price !== undefined ? parseFloat(p.price).toFixed(2) : "--";
             const displayPrice = isPriceVisible ? `${priceVal} DH` : `*** DH`;
@@ -385,19 +389,93 @@ function renderSubCategories(filteredQuery = null) {
             `;
         }
 
+        // 🟢 MODIFICATION: Masafa sghira bin les blocs (pb-2 بدل pb-4)
         container.innerHTML += `
-            <div class="sub-category-block border-bottom border-secondary pb-4">
-                <div class="d-flex align-items-center mb-3">
+            <div class="sub-category-block border-bottom border-secondary pb-2 mb-1">
+                <div class="d-flex align-items-center mb-2">
                     <h4 class="fw-bold text-info m-0 border-start border-info border-4 ps-2">${subCat.title || 'صنف فرعي'}</h4>
                     ${deleteSubBtn}
                 </div>
-                <div class="row g-3">
+                <div class="row g-2">
                     ${productsCardsHtml}
                     ${addPlusCardHtml}
                 </div>
             </div>
         `;
     });
+}
+
+function zoomProduct(sIndex, pIndex) {
+    editingSubCategoryIndex = sIndex;
+    editingProductIndex = pIndex;
+    const prod = data[activeCategoryIndex].subCategories[sIndex].products[pIndex];
+
+    document.getElementById('zoom-ref-badge').innerText = prod.ref || 'N/A';
+    document.getElementById('zoom-title').innerText = prod.name || 'بدون اسم';
+    document.getElementById('zoom-img').src = prod.image || 'https://via.placeholder.com/300';
+    
+    const zoomEditBtn = document.getElementById('zoom-edit-btn');
+    if (currentMode === 'admin') {
+        zoomEditBtn.classList.remove('d-none');
+    } else {
+        zoomEditBtn.classList.add('d-none');
+    }
+    
+    new bootstrap.Modal(document.getElementById('zoomModal')).show();
+}
+
+function openEditFromZoom() {
+    const zoomModalEl = document.getElementById('zoomModal');
+    const zoomModalInst = bootstrap.Modal.getInstance(zoomModalEl);
+    if (zoomModalInst) zoomModalInst.hide();
+
+    openEditProductModal(editingSubCategoryIndex, editingProductIndex);
+}
+
+function openEditProductModal(sIndex, pIndex) {
+    editingSubCategoryIndex = sIndex;
+    editingProductIndex = pIndex;
+    const prod = data[activeCategoryIndex].subCategories[sIndex].products[pIndex];
+
+    document.getElementById('edit-prod-ref').value = prod.ref || '';
+    document.getElementById('edit-prod-name').value = prod.name || '';
+    document.getElementById('edit-prod-price').value = prod.price || '';
+    document.getElementById('edit-prod-img-preview').src = prod.image || 'https://via.placeholder.com/300';
+    document.getElementById('edit-prod-img-file').value = '';
+
+    new bootstrap.Modal(document.getElementById('editProductModal')).show();
+}
+
+function updateProduct() {
+    if (editingSubCategoryIndex === null || editingProductIndex === null) return;
+
+    const ref = document.getElementById('edit-prod-ref').value.trim();
+    const name = document.getElementById('edit-prod-name').value.trim();
+    const price = document.getElementById('edit-prod-price').value.trim();
+    const fileInput = document.getElementById('edit-prod-img-file');
+
+    const prod = data[activeCategoryIndex].subCategories[editingSubCategoryIndex].products[editingProductIndex];
+
+    const saveChanges = (imgSrc) => {
+        prod.ref = ref || 'N/A';
+        prod.name = name || 'قطعة بدون اسم';
+        prod.price = price !== "" ? parseFloat(price) : null;
+        if (imgSrc) {
+            prod.image = imgSrc;
+        }
+
+        saveData();
+        renderSubCategories();
+        finishModal('editProductModal', ['edit-prod-ref', 'edit-prod-name', 'edit-prod-price', 'edit-prod-img-file']);
+    };
+
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => saveChanges(e.target.result);
+        reader.readAsDataURL(fileInput.files[0]);
+    } else {
+        saveChanges(null);
+    }
 }
 
 function addToFacture(sIndex, pIndex) {
@@ -502,19 +580,6 @@ function openAddProductModal(sIndex) {
     new bootstrap.Modal(document.getElementById('addProductModal')).show();
 }
 
-function zoomProduct(sIndex, pIndex) {
-    const prod = data[activeCategoryIndex].subCategories[sIndex].products[pIndex];
-    document.getElementById('zoom-ref-badge').innerText = prod.ref || 'N/A';
-    document.getElementById('zoom-title').innerText = prod.name || 'بدون اسم';
-    document.getElementById('zoom-img').src = prod.image || 'https://via.placeholder.com/300';
-    document.getElementById('zoom-info').innerText = '';
-    
-    const priceVal = prod.price !== "" && prod.price !== null && prod.price !== undefined ? parseFloat(prod.price).toFixed(2) : "--";
-    document.getElementById('zoom-price').innerText = isPriceVisible ? `${priceVal} DH` : `*** DH`;
-    
-    new bootstrap.Modal(document.getElementById('zoomModal')).show();
-}
-
 function addCategory() {
     const title = document.getElementById('cat-title').value.trim();
     const fileInput = document.getElementById('cat-img-file');
@@ -565,7 +630,7 @@ function addProduct() {
         data[activeCategoryIndex].subCategories[activeSubCategoryIndex].products.push({
             ref: ref || 'N/A',
             name: name || 'قطعة بدون اسم',
-            price: price !== "" ? price : null,
+            price: price !== "" ? parseFloat(price) : null,
             available: true,
             image: imgSrc || 'https://via.placeholder.com/300'
         });
@@ -608,7 +673,6 @@ function deleteProduct(sIndex, pIndex) {
     }
 }
 
-// 🏢 RENDU ET SUPPRESSION DES ENTREPRISES (CORRIGÉ)
 function renderCompanies() {
     const container = document.getElementById('companies-container');
     container.innerHTML = '';
@@ -616,7 +680,6 @@ function renderCompanies() {
     companies.forEach((comp, index) => {
         let deleteBtn = '';
         if (currentMode === 'admin') {
-            // CORRECTION: Appel à deleteCompany(event, index)
             deleteBtn = `<button class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 z-3" onclick="deleteCompany(event, ${index})"><i class="fa-solid fa-trash"></i></button>`;
         }
 
@@ -737,7 +800,6 @@ function addInvoice() {
     }
 }
 
-// 🗑️ SUPPRESSION FACTURE
 function deleteInvoice(index) {
     if (confirm("هل أنت تأكد من حذف هذه الفاتورة؟")) {
         companies[activeCompanyIndex].invoices.splice(index, 1);
@@ -773,11 +835,4 @@ function finishModal(modalId, inputIds = []) {
         const inp = document.getElementById(id);
         if (inp) inp.value = '';
     });
-}
-
-// Service Worker Registration
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js')
-    .then(() => console.log("Service Worker enregistré avec succès !"))
-    .catch((err) => console.error("Erreur SW:", err));
 }

@@ -1,6 +1,6 @@
 {
-  "appId": "com.autoparts.app",
-  "appName": "AutoParts",
+  "appId": "com.example.app",
+  "appName": "auto-parts-store",
   "webDir": "www",
   "bundledWebRuntime": false
 }
